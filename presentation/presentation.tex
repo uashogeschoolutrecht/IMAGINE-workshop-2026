@@ -1,0 +1,231 @@
+% !TEX program = pdflatex
+\documentclass[aspectratio=169,12pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[page number]
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\title{Local LLM Benchmarking}
+\subtitle{Saved notebook results: local vLLM, Ollama and Spark}
+\author{Workshop}
+\date{7 October 2026}
+% Source: saved outputs in the three project notebooks; no inference rerun.
+% vLLM: benchmark cell 2 (index 1), recorded local rows and summary only.
+% Ollama / Spark: benchmark cell index 8; visible answers from cell index 10.
+% Historical Spark comparisons and fresh completion queries in vLLM are excluded.
+% Text metrics recomputed uniformly: lower().split(), unique words / words,
+% repeated trigram occurrences beyond the first / all trigram positions.
+\begin{document}
+\begin{frame}\titlepage{}\end{frame}
+\begin{frame}{Agenda}\tableofcontents[hideallsubsections]\end{frame}
+\section{Setup \& Scope}
+\begin{frame}{Environment Overview}
+\small
+\begin{description}[Spark endpoint]
+\item[Local vLLM] \texttt{mlx-community/gemma-4-e4b-it-4bit}\\
+  OpenAI-compatible local endpoint: \texttt{localhost:8000}
+\item[Ollama] \texttt{gemma4:26b} at \texttt{localhost:11434}
+\item[Spark endpoint] \texttt{deepseek-ai/DeepSeek-V4-Flash}\\
+  Remote endpoint: \texttt{spark-0240:8000}
+\end{description}
+\begin{block}{Common prompts}
+Capital of France; short AI poem; quantum computing;\\
+three laws of robotics; plot of \emph{Inception}.
+\end{block}
+\footnotesize Model IDs and endpoints are recorded by the notebooks; server software, hardware and quantization are not independently verified here.
+\end{frame}
+\begin{frame}{What These Runs Compare}
+\begin{tabular}{lccc}
+\toprule
+Setting & Local vLLM & Ollama & Spark \\
+\midrule
+Requests & 5 & 5 & 5 \\
+Temperature & 0.7 & 0.7 & 0.7 \\
+Maximum tokens & 150 & 800 & 800 \\
+Chat endpoint & \multicolumn{3}{c}{\texttt{/v1/chat/completions}} \\
+\bottomrule
+\end{tabular}
+\begin{alertblock}{Different models and output budgets}
+These are sequential smoke benchmarks, not a controlled backend comparison or a concurrent load test. Output lengths and reasoning also differ.
+\end{alertblock}
+\small Ollama and Spark include an unmeasured smoke request before the benchmark. The local vLLM notebook records no explicit warm-up. Saved outputs are snapshots; some cells lack execution counts.
+\end{frame}
+\section{Latency}
+\begin{frame}{Per-Request End-to-End Latency}
+\centering
+\begin{tabular}{lrrr}
+\toprule
+Prompt & Local vLLM & Ollama & Spark \\
+\midrule
+Capital of France & 1.745\,s & 1.478\,s & 0.607\,s \\
+AI poem & 5.491\,s & 19.619\,s & 3.686\,s \\
+Quantum computing & 7.818\,s & 22.523\,s & 23.756\,s \\
+Robotics laws & 7.463\,s & 14.958\,s & 8.349\,s \\
+Inception & 7.794\,s & 24.565\,s & 15.920\,s \\
+
+\bottomrule
+\end{tabular}
+\vfill
+\begin{itemize}
+\item Spark is fastest for the capital query and poem in these runs.
+\item Local vLLM returns sooner for the other three prompts, with a much smaller token budget and visibly cut-off answers.
+\end{itemize}
+\end{frame}
+\begin{frame}{Latency Summary}
+\centering
+\begin{tabular}{lrrr}
+\toprule
+Metric & Local vLLM & Ollama & Spark \\
+\midrule
+Minimum & 1.745\,s & 1.478\,s & 0.607\,s \\
+Maximum & 7.818\,s & 24.565\,s & 23.756\,s \\
+Mean & 6.062\,s & 16.628\,s & 10.464\,s \\
+Median & 7.463\,s & 19.619\,s & 8.349\,s \\
+Sample std. dev. & 2.599\,s & 9.206\,s & 9.408\,s \\
+Total time & 30.312\,s & 83.142\,s & 52.318\,s \\
+
+\bottomrule
+\end{tabular}
+\vfill
+\small Standard deviation is the sample statistic ($n-1$). Local vLLM's saved summary uses unrounded timings; the other summaries are computed from displayed request rows. Five different prompts do not establish run-to-run stability.
+\end{frame}
+\section{Throughput}
+\begin{frame}{Token Counts and Throughput}
+\centering
+\small
+\begin{tabular}{lrrr}
+\toprule
+Metric & Local vLLM & Ollama & Spark \\
+\midrule
+Prompt tokens & 85 & 120 & 60 \\
+Completion tokens & 565 & 2,858 & 1,514 \\
+All tokens & 650 & 2,978 & 1,574 \\
+Completion rate (tok/s) & 18.64 & 34.37 & 28.94 \\
+All-token rate (tok/s) & 21.44 & 35.82 & 30.09 \\
+
+\bottomrule
+\end{tabular}
+\begin{block}{Definitions}
+Completion rate = sum of completion tokens / sum of request times.\\
+All-token rate includes prompt tokens; it is not generation speed.
+\end{block}
+\footnotesize End-to-end rates include request overhead and any server-reported reasoning tokens. Different tokenizers and models limit comparability. Ollama has the highest measured completion rate; these runs do not identify the cause.
+\end{frame}
+\section{Response Completeness \& Text Metrics}
+\begin{frame}{Response Completeness Matters}
+\begin{tabular}{p{0.18\textwidth}p{0.72\textwidth}}
+\toprule
+Run & Saved benchmark outcomes \\
+\midrule
+Local vLLM & 5 HTTP 200 responses. Quantum, robotics and Inception each reach 150 completion tokens and visibly end mid-response. Finish reasons were not retained. \\
+Ollama & 5 visible answers. Quantum and Inception report \texttt{length} at 800 tokens and are incomplete. Other responses report \texttt{stop}. \\
+Spark & 5 visible answers; all report \texttt{stop}. Completion counts range from 8 to 700. \\
+\bottomrule
+\end{tabular}
+\vfill
+\small Ollama retains reasoning text for all five responses; Spark's recorded reasoning fields are empty. The saved results do not quantify reasoning-token counts separately.
+\end{frame}
+\begin{frame}{Descriptive Text Metrics --- Same Formula}
+\centering
+\scriptsize
+\begin{tabular}{lrrrrrr}
+\toprule
+& \multicolumn{3}{c}{Type-token ratio} & \multicolumn{3}{c}{Repeated trigram ratio} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Prompt & vLLM & Ollama & Spark & vLLM & Ollama & Spark \\
+\midrule
+Capital of France & 1.000 & 1.000 & 1.000 & 0.000 & 0.000 & 0.000 \\
+AI poem & 0.797 & 0.738 & 0.704 & 0.000 & 0.000 & 0.000 \\
+Quantum computing & 0.716 & 0.732 & 0.507 & 0.009 & 0.011 & 0.023 \\
+Robotics laws & 0.661 & 0.652 & 0.690 & 0.018 & 0.079 & 0.036 \\
+Inception & 0.741 & 0.812 & 0.599 & 0.000 & 0.000 & 0.003 \\
+\midrule
+Mean & 0.783 & 0.787 & 0.700 & 0.005 & 0.018 & 0.012 \\
+
+\bottomrule
+\end{tabular}
+\vfill
+\footnotesize Computed from visible benchmark answers only. Words = lowercase whitespace-separated tokens. TTR = unique words / words. Repetition = trigram occurrences beyond the first / all trigram positions. Means are unweighted across five prompts.\\[0.5em]
+These describe text, not correctness. Length and truncation affect TTR. Historical Spark quality queries in the vLLM notebook are excluded.
+\end{frame}
+\begin{frame}{Visible Answer Length}
+\centering
+\begin{tabular}{lrrr}
+\toprule
+Words & Local vLLM & Ollama & Spark \\
+\midrule
+Capital of France & 6 & 6 & 6 \\
+AI poem & 74 & 61 & 81 \\
+Quantum computing & 109 & 97 & 521 \\
+Robotics laws & 115 & 141 & 171 \\
+Inception & 108 & 64 & 344 \\
+\midrule
+Mean & 82.4 & 73.8 & 224.6 \\
+
+\bottomrule
+\end{tabular}
+\vfill
+\begin{itemize}
+\item Spark's longer answers help explain its longer request times on some prompts.
+\item Ollama's completion counts include reasoning; visible word counts do not.
+\item Local vLLM and Ollama lengths include incomplete answers.
+\end{itemize}
+\end{frame}
+\begin{frame}{Qualitative Review of Saved Answers}
+\scriptsize
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.17\textwidth}*{3}{>{\raggedright\arraybackslash}p{0.23\textwidth}}}
+\toprule
+Prompt & Local vLLM & Ollama & Spark \\
+\midrule
+Capital & Concise Paris answer & Concise Paris answer & Concise Paris answer \\
+\addlinespace
+AI poem & 12 lines, 3 stanzas & 8 lines, 2 stanzas & 12 lines, 3 stanzas \\
+\addlinespace
+Quantum & Maze analogy; cut off & Classical bits explanation; cut off & Long librarian/genie analogy with headings and table \\
+\addlinespace
+Robotics & Altered law wording; third law cut off & Three laws plus Zeroth Law context & Three laws plus fictional-origin and Zeroth Law context \\
+\addlinespace
+Inception & Setup; cut off mid-sentence & Premise; cut off mid-sentence & Full-length synopsis with nested dream levels \\
+\bottomrule
+\end{tabular}
+\vfill
+\footnotesize Completeness and lexical diversity do not prove factual accuracy. The local robotics response changes the law wording; the quantum analogies warrant a separate factual review. No systematic correctness evaluation was performed.
+\end{frame}
+\section{Summary}
+\begin{frame}{What the Saved Results Support}
+\begin{itemize}
+\item \textbf{Local vLLM:} lowest mean latency (6.062\,s), but a 150-token budget and three visibly incomplete answers.
+\item \textbf{Ollama:} highest completion rate (34.37\,tok/s), longest total time (83.142\,s), and two explicitly truncated answers.
+\item \textbf{Spark:} fastest capital response (0.607\,s); all responses finish with \texttt{stop}. Mean latency is 10.464\,s and sample standard deviation is 9.408\,s.
+\end{itemize}
+\begin{alertblock}{Interpretation}
+These snapshots show tradeoffs in output length, reasoning and completion. They do not establish the best backend, equal answer quality, or predictable latency under load.
+\end{alertblock}
+\end{frame}
+\begin{frame}{A Fairer Follow-Up Benchmark}
+\begin{enumerate}
+\item Match prompts, token budgets and reasoning settings; compare the same model where possible.
+\item Record server versions, hardware, quantization and warm-up conditions.
+\item Repeat each prompt; retain full answers, finish reasons and usage details.
+\item Separate completion throughput, time to first token and concurrent serving capacity.
+\item Evaluate correctness and completeness alongside descriptive text metrics.
+\end{enumerate}
+\end{frame}
+\begin{frame}{Sources and Questions}
+\small
+\begin{itemize}
+\item \texttt{local-llm-vllm.ipynb}: local benchmark output in cell index 1.
+\item \texttt{local-llm-ollama.ipynb}: benchmark in cell index 8; visible answers in cell index 10.
+\item \texttt{local-llm-spark-cluster.ipynb}: benchmark in cell index 8; visible answers in cell index 10.
+\end{itemize}
+\begin{block}{Scope of this update}
+Presentation refreshed from saved notebook outputs on 7 October 2026. No inference rerun. Historical Spark comparison values and separate completion-endpoint queries inside the local vLLM notebook are not used.
+\end{block}
+\vfill
+\centering\Large Questions?
+\end{frame}
+\end{document}
