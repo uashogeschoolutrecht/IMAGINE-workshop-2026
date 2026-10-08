@@ -1,0 +1,43 @@
+\section{LiveCodeBench-Pro}
+\begin{frame}{LiveCodeBench-Pro: Methodology}
+\small
+Judge architecture: linux/arm64.\\
+Workshop subset: 10 identical problems per model.\\
+One C++ solution attempt; temperature 0; token budget 4096.\\
+Dataset revision: \texttt{adebffce047d}.\\
+Upstream commit: \texttt{d614eef4f95b}.\\
+\vfill
+Acceptance = accepted / selected problems. Missing or failed evaluations do not count as accepted.\\
+Subset scores are not full-benchmark leaderboard scores. Inference latency excludes judging.\\
+\href{https://github.com/GavinZhengOI/LiveCodeBench-Pro}{Source: LiveCodeBench-Pro}
+\end{frame}
+\begin{frame}{LiveCodeBench-Pro: Three-Model Results}
+\small
+\begin{tabular}{lccc}\toprule
+Metric & Local vLLM & Ollama & Spark \\\midrule
+Accepted / selected & Not run & 0/10 & 3/10 \\
+Acceptance & Not run & 0.0\% & 30.0\% \\
+Completed judging & Not run & 0/10 & 10/10 \\
+Failures & Not run & 10 & 0 \\
+Mean inference latency & Not run & 103.73 s & 33.87 s \\
+Truncated responses & Not run & 10 & 0 \\
+\bottomrule\end{tabular}
+\vfill\footnotesize
+Completed judging includes definitive code verdicts. Failures include inference errors, missing code, judge errors and timeouts.\\
+Incomplete runs remain visible in the selected-problem denominator. Truncations may also have a judge verdict.\\
+Ollama: gemma4:26b\\
+Spark: deepseek-ai/DeepSeek-V4-Flash\\
+\end{frame}
+\begin{frame}{LiveCodeBench-Pro: Verdict Breakdown}
+\small
+\begin{tabular}{lccc}\toprule
+Verdict & Local vLLM & Ollama & Spark \\\midrule
+Accepted & Not run & 0 & 3 \\
+No Code & Not run & 10 & 0 \\
+Signalled & Not run & 0 & 1 \\
+Time Limit Exceeded & Not run & 0 & 2 \\
+Wrong Answer & Not run & 0 & 4 \\
+Not evaluated & Not run & 0 & 0 \\
+\bottomrule\end{tabular}
+\vfill\footnotesize Different models, quantization and reasoning behavior limit backend comparisons.
+\end{frame}

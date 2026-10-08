@@ -1,0 +1,15 @@
+This directory contains a vendored snapshot of Moby's default seccomp profile.
+
+Source:
+https://github.com/moby/profiles/blob/main/seccomp/default.json
+
+License:
+Apache License 2.0
+https://github.com/moby/profiles/blob/main/LICENSE
+
+The generated go-judge profile is derived from this snapshot by
+cmd/seccomp-convert and includes go-judge-specific architecture handling and
+additional syscall restrictions.
+
+Workshop modification: add ARM64 fstatat (syscall 79) to the allow list.
+Pinned source: https://github.com/criyle/go-judge/blob/v1.13.0/seccomp/moby.yaml

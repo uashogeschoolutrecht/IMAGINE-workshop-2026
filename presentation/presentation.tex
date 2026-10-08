@@ -12,8 +12,9 @@
 \title{Local LLM Benchmarking}
 \subtitle{Saved notebook results: local vLLM, Ollama and Spark}
 \author{Workshop}
-\date{7 October 2026}
-% Source: saved outputs in the three project notebooks; no inference rerun.
+\date{8 October 2026}
+% Smoke-test source: saved outputs in the three project notebooks.
+% Coding evaluations: generated LiveCodeBench-Pro results include.
 % vLLM: benchmark cell 2 (index 1), recorded local rows and summary only.
 % Ollama / Spark: benchmark cell index 8; visible answers from cell index 10.
 % Historical Spark comparisons and fresh completion queries in vLLM are excluded.
@@ -21,6 +22,32 @@
 % repeated trigram occurrences beyond the first / all trigram positions.
 \begin{document}
 \begin{frame}\titlepage{}\end{frame}
+% Model specifications checked on 8 October 2026:
+% https://ai.google.dev/gemma/docs/core/model_card_4
+% https://huggingface.co/mlx-community/gemma-4-e4b-it-4bit
+% https://ollama.com/library/gemma4:26b
+% https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash
+% DeepSeek's release card reports 284B; its transparency PDF reports 285B.
+% Use the release card for the exact model ID recorded in the notebook.
+\begin{frame}{Compared Models: Parameters and Capabilities}
+\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.40\textwidth}@{}}
+\toprule
+Model / run & Parameters (billions) & Published capabilities \\
+\midrule
+\textbf{Gemma 4 E4B}\newline Local vLLM; MLX 4-bit & \textbf{8B} with embeddings\newline \textbf{4.5B effective} (dense) & Text, image, audio input. Coding, reasoning, tools.\newline \textbf{128K} token context. \\
+\addlinespace
+\textbf{Gemma 4 26B A4B}\newline Ollama: \texttt{gemma4:26b} & \textbf{25.2B total} (MoE)\newline \textbf{3.8B active/token} & Text, image input. Coding, reasoning, tools.\newline \textbf{256K} token context. \\
+\addlinespace
+\textbf{DeepSeek V4 Flash}\newline Spark endpoint & \textbf{284B total} (MoE)\newline \textbf{13B active/token} & Text input. Coding, math, agents; optional thinking.\newline \textbf{1M} token context. \\
+\bottomrule
+\end{tabular}
+\vfill
+\footnotesize
+E4B effective counts exclude lookup embeddings; Gemma encoders are additional. MoE = Mixture of Experts (subset active per token). Four-bit precision reduces storage, not parameters.\\[0.3em]
+All output text. These runs test text only; endpoint capabilities / context limits are unverified.\\[0.3em]
+Sources: \href{https://ai.google.dev/gemma/docs/core/model_card_4}{Google Gemma 4}; \href{https://ollama.com/library/gemma4:26b}{Ollama}; \href{https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash}{DeepSeek release card} (284B; transparency card: 285B).
+\end{frame}
 \begin{frame}{Agenda}\tableofcontents[hideallsubsections]\end{frame}
 \section{Setup \& Scope}
 \begin{frame}{Environment Overview}
@@ -195,6 +222,7 @@ Inception & Setup; cut off mid-sentence & Premise; cut off mid-sentence & Full-l
 \vfill
 \footnotesize Completeness and lexical diversity do not prove factual accuracy. The local robotics response changes the law wording; the quantum analogies warrant a separate factual review. No systematic correctness evaluation was performed.
 \end{frame}
+\input{livecodebench-results.tex}
 \section{Summary}
 \begin{frame}{What the Saved Results Support}
 \begin{itemize}
@@ -223,7 +251,7 @@ These snapshots show tradeoffs in output length, reasoning and completion. They 
 \item \texttt{local-llm-spark-cluster.ipynb}: benchmark in cell index 8; visible answers in cell index 10.
 \end{itemize}
 \begin{block}{Scope of this update}
-Presentation refreshed from saved notebook outputs on 7 October 2026. No inference rerun. Historical Spark comparison values and separate completion-endpoint queries inside the local vLLM notebook are not used.
+Smoke-test metrics use saved notebook outputs from 7 October 2026, without rerunning those tests. LiveCodeBench-Pro coding evaluations are reported separately. Historical Spark comparison values and separate completion-endpoint queries inside the local vLLM notebook are not used.
 \end{block}
 \vfill
 \centering\Large Questions?

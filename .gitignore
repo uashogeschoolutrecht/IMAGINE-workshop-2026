@@ -8,3 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
+
+# External benchmark checkout and response artifacts
+.benchmark/
+benchmark-results/
