@@ -15,6 +15,7 @@ import uuid
 from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import urlsplit
+from zoneinfo import ZoneInfo
 
 import requests
 
@@ -52,6 +53,18 @@ def endpoint(name):
 
 def headers(config):
     return {"Authorization": f"Bearer {config['api_key']}"} if config["api_key"] else {}
+
+
+def judge_error_verdict(error):
+    # Upstream wraps solution compiler diagnostics in its generic error status.
+    # Checker compilation and sandbox failures remain infrastructure failures.
+    if (
+        isinstance(error, str)
+        and error.startswith("Error: compile failed: main.cpp:")
+        and (": error:" in error or ": fatal error:" in error)
+    ):
+        return "Compilation Error"
+    return "Judge Failed"
 
 
 def select_problems(dataset, limit):
@@ -307,7 +320,7 @@ def make_judge(module, path, workers, timeout, judge_platform="linux/amd64"):
                 return "Judging"
             if result["status"] == "error":
                 self.last_error = result.get("error", "Unknown judge error")
-                return "Judge Failed"
+                return judge_error_verdict(self.last_error)
             return result["result"]
 
     return WorkshopJudge(worker=workers)
@@ -637,6 +650,12 @@ def render(directory, output):
         r"\vfill",
         r"Acceptance = accepted / selected problems. Missing or failed evaluations do not count as accepted.\\",
         r"Subset scores are not full-benchmark leaderboard scores. Inference latency excludes judging.\\",
+    ]
+    if "spark" in runs and runs["spark"].get("base_url"):
+        lines.append(
+            f"Spark endpoint: \\texttt{{{latex(runs['spark']['base_url'])}}}.\\\\"
+        )
+    lines += [
         r"\href{https://github.com/GavinZhengOI/LiveCodeBench-Pro}{Source: LiveCodeBench-Pro}",
         r"\end{frame}",
         r"\begin{frame}{LiveCodeBench-Pro: Three-Model Results}",
@@ -664,11 +683,21 @@ def render(directory, output):
     lines += [
         r"\bottomrule\end{tabular}",
         r"\vfill\footnotesize",
-        r"Completed judging includes definitive code verdicts. Failures include inference errors, missing code, judge errors and timeouts.\\",
+        r"Completed judging includes compilation errors and definitive code verdicts. Failures include inference errors, missing code, judge errors and timeouts.\\",
         r"Incomplete runs remain visible in the selected-problem denominator. Truncations may also have a judge verdict.\\",
     ]
     for name, run in runs.items():
-        lines.append(latex(LABELS[name] + ": " + run["model"]) + r"\\")
+        date = (
+            " ("
+            + datetime.fromisoformat(run["started_at"])
+            .astimezone(ZoneInfo("Europe/Amsterdam"))
+            .date()
+            .isoformat()
+            + ")"
+            if run.get("started_at")
+            else ""
+        )
+        lines.append(latex(LABELS[name] + ": " + run["model"] + date) + r"\\")
     lines += [
         r"\end{frame}",
         r"\begin{frame}{LiveCodeBench-Pro: Verdict Breakdown}",

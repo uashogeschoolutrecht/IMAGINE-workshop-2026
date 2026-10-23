@@ -8,6 +8,29 @@ import requests
 import livecodebench as lcb
 
 
+@pytest.mark.parametrize(
+    "error,expected",
+    [
+        (
+            "Error: compile failed: main.cpp:26:19: error: undefined variable",
+            "Compilation Error",
+        ),
+        (
+            "Error: compile failed: main.cpp:1: fatal error: missing header",
+            "Compilation Error",
+        ),
+        (
+            "Error: checker compile failed: checker.cpp:1: error: invalid",
+            "Judge Failed",
+        ),
+        ("Error: compile failed: Internal Error", "Judge Failed"),
+        (None, "Judge Failed"),
+    ],
+)
+def test_solution_compilation_error_classification(error, expected):
+    assert lcb.judge_error_verdict(error) == expected
+
+
 def test_endpoint_overrides(monkeypatch):
     monkeypatch.setenv("OLLAMA_BASE_URL", "http://example:11434/v1/")
     monkeypatch.setenv("OLLAMA_MODEL", "other")
@@ -170,6 +193,26 @@ def test_save_and_render(tmp_path):
     assert "1/3" in text and "Not run" in text
     assert "Not evaluated & 1 & Not run & Not run" in text
     assert not (tmp_path / "vllm.tmp").exists()
+
+
+@pytest.mark.parametrize(
+    "started_at", ["2026-10-20T10:00:00+00:00", "2026-10-19T23:30:00+00:00"]
+)
+def test_render_spark_provenance_and_compilation_verdict(tmp_path, started_at):
+    saved = run("spark")
+    saved.update(
+        started_at=started_at,
+        base_url="http://spark-0240:9000",
+    )
+    saved["results"][0]["judge_result"] = "Compilation Error"
+    lcb.save(tmp_path / "spark.json", saved)
+    output = tmp_path / "slides.tex"
+    lcb.render(tmp_path, output)
+    text = output.read_text()
+    assert "http://spark-0240:9000" in text
+    assert "Spark: model\\_1 \\& test (2026-10-20)" in text
+    assert "Compilation Error & Not run & Not run & 1" in text
+    assert lcb.summary(saved)[2:4] == ["1/3", "1"]
 
 
 @pytest.mark.parametrize(

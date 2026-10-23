@@ -1,0 +1,438 @@
+% !TEX program = pdflatex
+% Eleven slides following presentation/outline.md, including the title slide.
+% Build from presentation/: pdflatex -interaction=nonstopmode -halt-on-error local-ai-workshop.tex
+% Run twice to resolve the total slide count. The old deck remains separate.
+\documentclass[aspectratio=169,12pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[page number]
+\setbeamertemplate{itemize items}[circle]
+\setbeameroption{hide notes}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\source}[1]{\par\vfill{\fontsize{7}{8.5}\selectfont\color{black!65}#1\par}}
+\newcommand{\modelid}[1]{{\fontsize{8}{9.5}\selectfont\texttt{#1}}}
+\newcommand{\lead}[1]{{\usebeamercolor[fg]{structure}\bfseries #1}}
+\title{DIY-AI}
+\subtitle{Running Large Language and Agentic Models\\in your own environments}
+\author{Dr. Coert van Gemeren}
+\institute{HU University of Applied Sciences Utrecht}
+\date{26 October 2026}
+\hypersetup{pdftitle={DIY-AI: Running Large Language and Agentic Models in your own environments},
+  pdfauthor={Dr. Coert van Gemeren},
+  pdfsubject={Eleven-slide workshop based on outline.md}}
+
+\begin{document}
+
+% SLIDE 1 -------------------------------------------------------------
+\begin{frame}
+\titlepage
+\note{Title, subtitle, presenter, institution and event date follow
+presentation/outline.md slide 1.}
+\end{frame}
+
+% SLIDE 2 -------------------------------------------------------------
+\begin{frame}{Local AI: models, runtimes and hardware}
+\small
+A trained \textbf{model} supplies the weights. A \textbf{runtime} loads them
+and runs inference on compatible \textbf{hardware}.
+\par\medskip
+
+{\footnotesize
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.19\textwidth}Y >{\raggedright\arraybackslash}p{0.22\textwidth}@{}}
+\toprule
+\textbf{Runtime} & \textbf{Example model} & \textbf{Workshop use} \\
+\midrule
+Ollama service & \modelid{gemma4:26b} & Text chat on Mac \\
+\addlinespace[0.3em]
+vLLM Metal service & \modelid{mlx-community/gemma-4-e4b-it-4bit} & Text, no audio in this setup \\
+\addlinespace[0.3em]
+vLLM Metal service & \modelid{openai/whisper-large-v3} & Audio transcription \\
+\addlinespace[0.3em]
+MLX-VLM program & \modelid{google/gemma-4-E4B-it} & Audio input on Mac \\
+\addlinespace[0.3em]
+vLLM service & \modelid{deepseek-ai/DeepSeek-V4-Flash} & Text and code on Spark \\
+\bottomrule
+\end{tabularx}}
+\par\medskip
+\lead{Local AI is practical:} match your task and model to the runtime and available memory.
+\source{Workshop configurations from the outline, notebooks and launch scripts.
+Runtime references: \href{https://github.com/vllm-project/vllm-metal}{vLLM Metal},
+\href{https://github.com/Blaizzy/mlx-vlm}{MLX-VLM},
+\href{https://docs.ollama.com/quickstart}{Ollama}.}
+\note{Sources: presentation/outline.md slide 2; start-mlx-vllm.sh; start-mlx-vlm.sh;
+local-llm-vllm.ipynb, local-llm-ollama.ipynb, local-llm-whisper.ipynb,
+local-llm-gemma.ipynb, local-llm-spark-cluster.ipynb.
+The no-audio label describes the workshop vLLM Gemma configuration, not every
+Gemma 4 model or current vLLM implementation. vLLM Metal is the Apple Silicon
+plugin using MLX. References checked 21 October 2026:
+\url{https://github.com/vllm-project/vllm-metal};
+\url{https://github.com/Blaizzy/mlx-vlm}; \url{https://docs.ollama.com/quickstart}.}
+\end{frame}
+
+% SLIDE 3 -------------------------------------------------------------
+\begin{frame}{Four ways to run the workshop models}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.27\textwidth}Y >{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
+\toprule
+\textbf{Hardware and runtime} & \textbf{How we use it} & \textbf{Entry point} \\
+\midrule
+\textbf{Apple Silicon + Ollama} & Easiest starting point for local chat & \modelid{ollama run gemma4:26b} \\
+\addlinespace[0.3em]
+\textbf{Apple Silicon + vLLM Metal} & A local model service for notebooks and apps & \modelid{./start-mlx-vllm.sh}\newline API at \modelid{localhost:8000} \\
+\addlinespace[0.3em]
+\textbf{Apple Silicon + MLX-VLM} & Direct Python inference, including Gemma audio & \modelid{local-llm-gemma.ipynb} \\
+\addlinespace[0.3em]
+\textbf{DGX Spark + vLLM} & Connect over VPN and call the remote model service & Change the API base URL to Spark \\
+\bottomrule
+\end{tabularx}
+\par\medskip
+After installation and download, start a model with a command or a cell.\par
+Gemma's saved local model load: \textbf{4.8 seconds}.
+\source{Sources: local launch scripts and notebooks. Spark audio uses 1 DGX Spark.
+DeepSeek uses 2 DGX Sparks. Hardware and VPN configuration follow the workshop outline.}
+\note{Sources: presentation/outline.md slide 3; start-mlx-vllm.sh;
+local-llm-gemma.ipynb cell index 2 records a 4.8 s load;
+local-llm-qwen-omni.ipynb uses spark-0240:8000;
+benchmark-results/spark.json uses spark-0240:9000.
+First-time installation, downloads, service startup and model loading are distinct
+from warm inference. These launch commands assume setup is complete.}
+\end{frame}
+
+% SLIDE 4 -------------------------------------------------------------
+\begin{frame}{Three tests of useful model behavior}
+\small
+\lead{1. Five questions: responsiveness and completeness}\par
+Capital of France, an AI poem, quantum computing, the laws of robotics
+and the plot of \emph{Inception}.\par
+\textbf{Measures:} request latency, completion tokens per second and cut-off answers.
+\par\bigskip
+
+\lead{2. Dutch transcription: agreement with a curated reference}\par
+Jeroen Hendrikse's radiology recording from UMC Utrecht.\par
+\textbf{Measure:} word error rate (WER) over 1,350 reference words.
+\par\bigskip
+
+\lead{3. LiveCodeBench-Pro: executable programming solutions}\par
+Ten contest problems, with one C++ solution attempt per problem.\par
+\textbf{Measure:} accepted solutions out of ten selected problems.
+\par\medskip
+
+\textbf{Only DeepSeek on Spark produced judgeable code among our self-hosted setups.}
+GPT-6 Astra provides a separate cloud comparison.
+\source{Sources: original presentation, transcription notebooks and saved LiveCodeBench-Pro results.
+The five-question test is a smoke test, without a systematic correctness score.}
+\note{Five-question prompts and metrics reuse presentation/presentation.tex.
+Audio: local-llm-whisper.ipynb, local-llm-gemma.ipynb, local-llm-qwen-omni.ipynb.
+Coding: benchmark-results/ollama.json and benchmark-results/spark.json.
+Ollama has 10 No Code responses. Local vLLM was not run in the saved judged comparison.
+GPT-6 Astra's later Codex-session evaluation is recorded in
+presentation/livecodebench-gpt-6-astra-results.tex and
+benchmark-results/gpt-6-astra-2026-10-21/. Its generation conditions differ.}
+\end{frame}
+
+% SLIDE 5 -------------------------------------------------------------
+\begin{frame}{Five questions: speed and completion}
+\small
+\centering
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Request latency} & \textbf{Local vLLM} & \textbf{Ollama} & \textbf{Spark} \\
+ & Gemma E4B & Gemma 26B & DeepSeek V4 Flash \\
+\midrule
+Capital of France & 1.745\,s & 1.478\,s & \textbf{0.607\,s} \\
+AI poem & 5.491\,s & 19.619\,s & \textbf{3.686\,s} \\
+Quantum computing & 7.818\,s & 22.523\,s & 23.756\,s \\
+Laws of robotics & 7.463\,s & 14.958\,s & 8.349\,s \\
+\emph{Inception} & 7.794\,s & 24.565\,s & 15.920\,s \\
+\midrule
+Mean latency & 6.062\,s & 16.628\,s & 10.464\,s \\
+Completion rate (tokens/s) & 18.64 & 34.37 & 28.94 \\
+Incomplete answers & 3 of 5 & 2 of 5 & 0 of 5 \\
+\bottomrule
+\end{tabular}
+\par\medskip
+\raggedright
+Local vLLM's three faster answers were cut short.\par
+Spark finished all five responses with \texttt{stop}.
+\source{Reused from the original deck's 7 October 2026 snapshot.
+Token budgets: 150 / 800 / 800. Different models, tokenizers and reasoning limit comparisons.
+Completion rate = total completion tokens / total request time.}
+\note{Source: presentation/presentation.tex, frames Per-Request End-to-End Latency,
+Latency Summary, Token Counts and Throughput, and Response Completeness Matters.
+The user specifically requested the original presentation's first-test results.
+The current local-llm-spark-cluster.ipynb contains a newer five-question run,
+so this slide deliberately retains the dated original snapshot.
+The local vLLM notebook does not retain finish reasons. Three visible answers
+end mid-response at the 150-token limit. Ollama has two length finish reasons.
+Spark has five stop finish reasons. Completion does not establish correctness.}
+\end{frame}
+
+% SLIDE 6 -------------------------------------------------------------
+\begin{frame}{Dutch transcription: three models on one recording}
+\small
+Jeroen Hendrikse, UMC Utrecht: \emph{radiologieverslag}\par
+\textbf{473.6 seconds of speech}, scored against 1,350 curated reference words.
+\par\medskip
+
+\begin{tabularx}{\textwidth}{@{}Y p{0.23\textwidth}rr@{}}
+\toprule
+\textbf{Model} & \textbf{Runtime / hardware} & \textbf{WER} $\downarrow$ & \textbf{Time} \\
+\midrule
+Whisper large-v3\newline\modelid{openai/whisper-large-v3}
+ & vLLM Metal\newline Apple Silicon & 12.00\% & Not recorded \\
+\addlinespace[0.8em]
+\textbf{Gemma 4 E4B}\newline\modelid{google/gemma-4-E4B-it}
+ & MLX-VLM\newline Apple Silicon & \textbf{7.78\%} & 144.3\,s \\
+\addlinespace[0.8em]
+Qwen3-Omni 30B A3B\newline\modelid{Qwen/Qwen3-Omni-30B-A3B-Instruct}
+ & vLLM\newline 1 DGX Spark & 8.44\% & 98.1\,s \\
+\bottomrule
+\end{tabularx}
+\par\medskip
+Gemma has the lowest WER. Qwen finishes the transcription loop sooner.
+\source{Sources: saved outputs of local-llm-whisper.ipynb, local-llm-gemma.ipynb and
+local-llm-qwen-omni.ipynb. Time covers the transcription loop, excluding model loading and
+initial audio decoding. Whisper's notebook does not time the request.}
+\note{All scores verified against current saved outputs on 21 October 2026.
+Whisper cell index 7: 162/1350 = 12.00 percent.
+Gemma cell index 7: 105/1350 = 7.78 percent; cell 3: 144.3 seconds.
+Qwen cell index 7: 114/1350 = 8.44 percent; cell 3: 98.1 seconds.
+Gemma and Qwen use the same 18 chunks, maximum 28 seconds, and the same prompt.
+Whisper submits the complete MP3 to /v1/audio/transcriptions with language nl.
+All use temperature 0. These are measured pipelines with different hardware and
+preprocessing paths, not an isolated test of model size or backend speed.}
+\end{frame}
+
+% SLIDE 7 -------------------------------------------------------------
+\begin{frame}{Word error rate: Gemma's small advantage}
+\small
+\[
+\mathrm{WER}=\frac{\text{substitutions}+\text{deletions}+\text{insertions}}
+{\text{reference words}}\times100\%
+\]
+\centering
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\textbf{Model} & \textbf{Substitutions} & \textbf{Deletions} & \textbf{Insertions} & \textbf{Total} \\
+\midrule
+Whisper large-v3 & 86 & 41 & 35 & 162 \\
+\textbf{Gemma 4 E4B} & 69 & 21 & 15 & \textbf{105} \\
+Qwen3-Omni & 73 & 15 & 26 & 114 \\
+\bottomrule
+\end{tabular}
+\par\bigskip
+\raggedright
+\lead{Gemma: 9 fewer word errors than Qwen}\par
+7.78\% versus 8.44\% WER: a \textbf{0.67 percentage-point} gap
+using the unrounded scores.
+\par\medskip
+
+Scoring ignores case and punctuation, splits hyphens, and retains fillers
+and repetitions. Curated TXT and SRT references yield identical scores.
+\source{Sources: the three transcription notebooks, cell index 7. One recording and different
+inference pipelines. This small difference does not establish a general model ranking.
+WER counts word differences without weighting their clinical meaning.}
+\note{Reuses and updates the original Audio Evaluation slide.
+Absolute gap: (114-105)/1350*100 = 0.6666667 percentage points.
+Relative error reduction: 9/114 = 7.8947 percent (not displayed).
+The displayed WER values round independently, so their difference rounds to 0.66;
+the slide's 0.67 pp uses the underlying integer counts.
+The scoring routine implements word-level minimum edit distance after NFKC
+normalization and case folding. Reference editorial choices can affect WER.}
+\end{frame}
+
+% SLIDE 8 -------------------------------------------------------------
+\begin{frame}{LiveCodeBench-Pro: a harder programming test}
+\small
+Contest problems from \textbf{Codeforces, ICPC and IOI} require an algorithm
+and working code that passes the judge's tests.
+\par\medskip
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.51\textwidth}
+\lead{What happened locally}\par\smallskip
+Local MLX trials did not yield usable solutions in the workshop.\par
+The saved comparison records:
+\begin{itemize}
+\setlength{\itemsep}{0.4em}
+\item \textbf{Ollama, Gemma 26B:} all 10 responses hit the 4,096-token limit
+without final code.
+\item \textbf{Local vLLM: Not run.}
+\end{itemize}
+\end{column}
+\begin{column}{0.44\textwidth}
+\lead{The larger model}\par\smallskip
+\textbf{DeepSeek V4 Flash}\par
+\modelid{deepseek-ai/DeepSeek-V4-Flash}
+\par\medskip
+vLLM over VPN on \textbf{2 DGX Sparks}\par
+\textbf{256 GB} total unified memory\par
+(128 GB per node)
+\par\medskip
+One C++ attempt per problem.\par
+Temperature 0, 4,096 tokens.
+\end{column}
+\end{columns}
+\par\medskip
+The trials expose task difficulty and a token-budget limit, without
+establishing a general limit for local models.
+\source{Local MLX observation and cluster configuration: workshop outline.
+Saved evidence: Ollama, 8 October; Spark, 20 October 2026.
+\href{https://arxiv.org/abs/2506.11928}{LiveCodeBench-Pro paper};
+\href{https://www.nvidia.com/en-us/products/workstations/dgx-spark/}{DGX Spark specifications}.}
+\note{The user reports unsuccessful local MLX trials in outline.md slide 8.
+The retained benchmark artifacts do not contain a completed local MLX/vLLM run.
+Do not convert Not run to a measured zero or attribute Ollama's No Code outcomes to MLX.
+benchmark-results/ollama.json has 10 No Code verdicts and 10 length finish reasons.
+The benchmark uses the first 10 unique problem IDs in sorted order, seven easy
+and three medium; it contains no hard-tier problems. Native ARM64 judging.
+Dataset revision adebffce047dddb7768a86bace6aea4f7425e3bc.
+Upstream commit d614eef4f95b3654bf0758c64e1194b2575850b8.
+Sources checked 21 October 2026: \url{https://arxiv.org/abs/2506.11928};
+\url{https://www.nvidia.com/en-us/products/workstations/dgx-spark/}.
+256 GB is the aggregate across two 128 GB nodes, not a single shared address space.}
+\end{frame}
+
+% SLIDE 9 -------------------------------------------------------------
+\begin{frame}{LiveCodeBench-Pro: Spark and GPT-6 Astra}
+\small
+Same ten problems and ARM64 judge. Both runs completed judging for all ten.
+\par\medskip
+\centering
+\begin{tabular}{@{}lcc@{}}
+\toprule
+ & \textbf{DeepSeek V4 Flash} & \textbf{GPT-6 Astra} \\
+ & 2 DGX Sparks, 20 October & Codex session, 21 October \\
+\midrule
+Accepted / selected & \textbf{4/10 (40\%)} & \textbf{10/10 (100\%)} \\
+Compilation error & 4 & 0 \\
+Wrong answer & 2 & 0 \\
+Mean inference time & 25.32\,s & Not measured \\
+\bottomrule
+\end{tabular}
+\par\medskip
+\raggedright
+\lead{Astra passed all ten problems.}
+DeepSeek's six failures included four compilation errors.
+\par\medskip
+\textbf{Generation conditions differ:}\par
+DeepSeek: temperature 0, 4,096-token API budget per problem.\par
+Astra: Codex with \texttt{xhigh} reasoning, shared conversation context,
+no per-problem token cap.
+\source{Source: livecodebench-gpt-6-astra-results.tex and saved JSON.
+One judged submission per problem. Astra sources frozen before testing, with no revisions
+after feedback. Subset: 7 easy, 3 medium, 0 hard. Generation conditions differ.
+These are workshop results, not full-benchmark leaderboard scores.}
+\note{Source: presentation/livecodebench-gpt-6-astra-results.tex, corroborated on
+22 October 2026 against benchmark-results/gpt-6-astra-2026-10-21/gpt-6-astra.json,
+deepseek-baseline.json and manifest.json. Both models use the same ten problem IDs,
+dataset revision adebffce047dddb7768a86bace6aea4f7425e3bc, upstream commit
+d614eef4f95b3654bf0758c64e1194b2575850b8, and linux/arm64 LightCPVerifier judge.
+DeepSeek: 20 October 2026, 4 Accepted, 4 Compilation Error, 2 Wrong Answer.
+Mean inference latency 25.3208730209 s, no truncated responses.
+GPT-6 Astra: 21 October 2026, ten Accepted verdicts and 582/582 recorded judge
+cases passed. Sources were authored and reviewed in a shared Codex conversation
+with xhigh reasoning, frozen before any sample execution or judge submission,
+and submitted once each. No revisions after feedback, no editorials, reference
+solutions or hidden testcase inputs consulted. No per-problem token cap,
+temperature setting, inference latency or token-usage measurements.
+The Codex-session result is not a controlled API comparison with DeepSeek.
+It replaces the earlier historical cloud-model context with the user's own
+evaluation of the same subset. Model IDs: gpt-6-astra and
+deepseek-ai/DeepSeek-V4-Flash.}
+\end{frame}
+
+% SLIDE 10 -------------------------------------------------------------
+\begin{frame}{Local document search with RAG on DGX Spark}
+\small
+Retrieval-augmented generation (RAG) supplies relevant document passages
+to the model before it writes an answer.
+\par\medskip
+
+% Editable TikZ diagram explicitly requested by outline.md.
+\centering
+\begin{tikzpicture}[
+  x=1cm,y=1cm,
+  ragnode/.style={draw=structure.fg,fill=white,align=center,
+    minimum height=0.65cm,text width=2.4cm,font=\small,inner sep=4pt},
+  flow/.style={-{Stealth[length=2mm]},thick,draw=structure.fg},
+  raglabel/.style={font=\scriptsize,align=center,text=black!70}]
+\node[ragnode] (docs) at (0,0) {Documents};
+\node[ragnode] (chunks) at (3.2,0) {Chunking};
+\node[ragnode,text width=2.6cm,font=\fontsize{9}{10}\selectfont] (embed) at (6.4,0) {EmbeddingGemma};
+\node[ragnode] (db) at (9.6,0) {Vector DB\,(Milvus)};
+\draw[flow] (docs) -- (chunks);
+\draw[flow] (chunks) -- (embed);
+\draw[flow] (embed) -- (db);
+
+\node[ragnode] (query) at (0,-1.3) {Question};
+\node[ragnode,text width=2.6cm,font=\fontsize{9}{10}\selectfont] (qembed) at (3.2,-1.3) {EmbeddingGemma};
+\draw[flow] (query) -- (qembed);
+\draw[flow] (qembed.east) -- node[raglabel,above,pos=0.55] {query vector} (9.6,-1.3) -- (db.south);
+
+\node[ragnode,dashed,text width=3.65cm] (rerank) at (8.9,-2.65)
+  {BGE reranker v2.5\\Gemma2 lightweight\\[-1pt]{\scriptsize optional}};
+\node[ragnode] (llm) at (4.4,-2.65) {Gemma 4 31B};
+\node[ragnode] (answer) at (0,-2.65) {Answer\\with source passages};
+\draw[flow] (db.east) -- (11.15,0) --
+  node[raglabel,right] {Top-K} (11.15,-2.65) -- (rerank.east);
+\draw[flow] (rerank.west) -- node[raglabel,above] {Top-N} (llm.east);
+\draw[flow] (llm.west) -- (answer.east);
+\draw[flow] (query.west) -- (-1.6,-1.3) -- (-1.6,-3.5) --
+  node[raglabel,below,pos=0.55] {original question} (4.4,-3.5) -- (llm.south);
+\end{tikzpicture}
+\par\smallskip
+\raggedright
+Top-K retrieves candidate passages. The optional reranker selects Top-N.
+Without reranking, the retrieved passages go directly to Gemma.
+\source{Proposed local stack from the outline, not a benchmarked deployment.
+Model references: \href{https://huggingface.co/google/embeddinggemma-300m}{EmbeddingGemma 300M},
+\href{https://huggingface.co/BAAI/bge-reranker-v2.5-gemma2-lightweight}{BGE reranker},
+\href{https://huggingface.co/google/gemma-4-31B-it}{Gemma 4 31B};
+\href{https://milvus.io/docs/quickstart.md}{Milvus documentation}.}
+\note{Architecture follows outline.md slide 10. The query also needs an embedding
+in the same vector space as document chunks. Retain document text and source
+metadata with vectors. The reranker scores query/passage pairs, then the generator
+receives the original question and selected passages. Diagram arrow Top-K carries
+passages and their metadata, not just vectors. The original question also goes
+to the reranker (omitted as a separate connector for legibility).
+Model IDs: google/embeddinggemma-300m;
+BAAI/bge-reranker-v2.5-gemma2-lightweight; google/gemma-4-31B-it.
+The BGE card identifies this model as a Gemma2-9B-based reranker with layer and
+token compression. The diagram is a proposed architecture, without claims of
+measured retrieval quality, simultaneous memory fit, latency or clinical validation.
+Sources checked 21 October 2026:
+\url{https://huggingface.co/google/embeddinggemma-300m};
+\url{https://huggingface.co/BAAI/bge-reranker-v2.5-gemma2-lightweight};
+\url{https://huggingface.co/google/gemma-4-31B-it};
+\url{https://milvus.io/docs/quickstart.md}.}
+\end{frame}
+
+% SLIDE 11 -------------------------------------------------------------
+\begin{frame}{Next: agentic orchestration in clinical imaging}
+\vfill
+{\Large\usebeamercolor[fg]{structure}Local models and document retrieval\par
+are building blocks for a wider workflow.\par}
+\par\bigskip
+The next presenter will introduce an agentic orchestrator\par
+for use in clinical imaging practice.
+\par\bigskip
+\small
+Coordinating model calls, retrieved information and tools\par
+around the steps of a clinical imaging workflow.
+\vfill
+{\large\textbf{Over to the next presenter.}}
+\vfill
+\note{Handover requested in presentation/outline.md slide 11.
+No presenter name, product name or deployment claims were supplied.}
+\end{frame}
+
+\end{document}

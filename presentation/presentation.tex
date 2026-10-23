@@ -12,7 +12,7 @@
 \title{Local LLM Benchmarking}
 \subtitle{Saved notebook results: local vLLM, Ollama and Spark}
 \author{Workshop}
-\date{8 October 2026}
+\date{20 October 2026}
 % Smoke-test source: saved outputs in the three project notebooks.
 % Coding evaluations: generated LiveCodeBench-Pro results include.
 % vLLM: benchmark cell 2 (index 1), recorded local rows and summary only.
@@ -48,7 +48,7 @@ E4B effective counts exclude lookup embeddings; Gemma encoders are additional. M
 All output text. These runs test text only; endpoint capabilities / context limits are unverified.\\[0.3em]
 Sources: \href{https://ai.google.dev/gemma/docs/core/model_card_4}{Google Gemma 4}; \href{https://ollama.com/library/gemma4:26b}{Ollama}; \href{https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash}{DeepSeek release card} (284B; transparency card: 285B).
 \end{frame}
-\begin{frame}{Agenda}\tableofcontents[hideallsubsections]\end{frame}
+\begin{frame}{Agenda}\small\tableofcontents[hideallsubsections]\end{frame}
 \section{Setup \& Scope}
 \begin{frame}{Environment Overview}
 \small
@@ -222,6 +222,60 @@ Inception & Setup; cut off mid-sentence & Premise; cut off mid-sentence & Full-l
 \vfill
 \footnotesize Completeness and lexical diversity do not prove factual accuracy. The local robotics response changes the law wording; the quantum analogies warrant a separate factual review. No systematic correctness evaluation was performed.
 \end{frame}
+\section{Audio Transcription}
+% Sources: local-llm-gemma.ipynb and local-llm-qwen-omni.ipynb saved outputs.
+% Whisper: earlier executed local-llm-whisper.ipynb run recorded in this session:
+% 86 substitutions + 41 deletions + 35 insertions = 162 / 1350 = 12.00%.
+% Whisper notebook outputs were cleared before this presentation update.
+\begin{frame}{Dutch Audio: Models, Locations and WER}
+\small
+UMC Utrecht: Jeroen Hendrikse, radiologieverslag\\
+473.6 seconds of Dutch speech; 1,350 normalized reference words.
+\vspace{0.3em}
+
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.34\textwidth}>{\raggedright\arraybackslash}p{0.39\textwidth}r@{}}
+\toprule
+Model & Runtime and location & WER $\downarrow$ \\
+\midrule
+Whisper large-v3 & vLLM Metal, local Mac\newline \texttt{localhost:8000} & 12.00\% \\
+\addlinespace
+\textbf{Gemma 4 E4B IT} & MLX-VLM, local Mac\newline Direct Python inference & \textbf{7.78\%} \\
+\addlinespace
+Qwen3-Omni 30B A3B Instruct & vLLM, NVIDIA Spark\newline \texttt{spark-0240:8000} & 8.44\% \\
+\bottomrule
+\end{tabular}
+\vfill
+\small Gemma has the lowest WER on this recording: 35\% fewer word errors than the recorded Whisper run. Qwen trails Gemma by 9 word errors.
+\vspace{0.3em}
+
+\footnotesize Sources: saved Gemma/Qwen notebooks and earlier recorded Whisper run (outputs now cleared). Both curated TXT and SRT references give the same scores.
+\end{frame}
+
+\begin{frame}{Audio Evaluation: Scoring and Comparison Scope}
+\small
+\[
+\mathrm{WER} = \frac{\text{substitutions} + \text{deletions} + \text{insertions}}{\text{reference words}}
+\]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+Model & Substitutions & Deletions & Insertions & Total \\
+\midrule
+Whisper large-v3 & 86 & 41 & 35 & 162 \\
+Gemma 4 E4B IT & 69 & 21 & 15 & 105 \\
+Qwen3-Omni & 73 & 15 & 26 & 114 \\
+\bottomrule
+\end{tabular}
+\vspace{0.3em}
+
+\raggedright
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\item Same audio and references. Scoring ignores case and punctuation, splits hyphens, and retains fillers and repetitions.
+\item Gemma/Qwen: identical prompt and 18 chunks (max. 28\,s). Whisper: complete MP3 to its transcription API. All use temperature 0.
+\item One recording, different inference pipelines. Results compare the tested setups, without isolating model or hardware effects.
+\end{itemize}
+\end{frame}
 \input{livecodebench-results.tex}
 \section{Summary}
 \begin{frame}{What the Saved Results Support}
@@ -251,7 +305,7 @@ These snapshots show tradeoffs in output length, reasoning and completion. They 
 \item \texttt{local-llm-spark-cluster.ipynb}: benchmark in cell index 8; visible answers in cell index 10.
 \end{itemize}
 \begin{block}{Scope of this update}
-Smoke-test metrics use saved notebook outputs from 7 October 2026, without rerunning those tests. LiveCodeBench-Pro coding evaluations are reported separately. Historical Spark comparison values and separate completion-endpoint queries inside the local vLLM notebook are not used.
+Smoke-test metrics use saved notebook outputs from 7 October 2026. Coding results use Ollama's 8 October run and Spark's 20 October run on port 9000. Historical Spark comparisons and separate completion-endpoint queries inside the local vLLM notebook are excluded.
 \end{block}
 \vfill
 \centering\Large Questions?

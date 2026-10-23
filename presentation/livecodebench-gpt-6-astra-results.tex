@@ -1,0 +1,59 @@
+% Generated from benchmark-results/gpt-6-astra-2026-10-21/gpt-6-astra.json
+% Baseline: the adjacent deepseek-baseline.json snapshot of benchmark-results/spark.json.
+% Regenerate using benchmark-results/gpt-6-astra-2026-10-21/render.py.
+% Beamer include, matching livecodebench-results.tex. Requires booktabs.
+% Full source hashes and generation conditions are in the run's manifest.json.
+\section{LiveCodeBench-Pro: GPT-6 Astra}
+\begin{frame}{LiveCodeBench-Pro: GPT-6 Astra Methodology}
+\small
+Same 10 problems as the DeepSeek V4 Flash run of 20 October 2026.\\
+Same C++ judge: LightCPVerifier on \texttt{linux/arm64}.\\
+Dataset revision: \texttt{adebffce047d}.\\
+Upstream commit: \texttt{d614eef4f95b}.\\[0.8em]
+GPT-6 Astra: solutions authored in Codex on 21 October 2026,
+with \texttt{xhigh} reasoning. All ten sources frozen before testing.\\
+One judged submission per problem, with no revisions after feedback.\\
+No editorials, reference solutions or hidden test inputs consulted.
+\vfill\footnotesize
+Generation settings differ: DeepSeek used temperature 0 and a 4,096-token API budget. Astra used a shared Codex conversation without a per-problem token cap.\\
+These are subset results under different generation conditions.\\
+\href{https://github.com/GavinZhengOI/LiveCodeBench-Pro}{Source: LiveCodeBench-Pro}
+\end{frame}
+\begin{frame}{LiveCodeBench-Pro: GPT-6 Astra Results}
+\small
+\begin{tabular}{lcc}\toprule
+Metric & GPT-6 Astra & DeepSeek V4 Flash \\\midrule
+Accepted / selected & 10/10 & 4/10 \\
+Acceptance & 100.0\% & 40.0\% \\
+Completed judging & 10/10 & 10/10 \\
+Failures & 0 & 0 \\
+Compilation Error & 0 & 4 \\
+Wrong Answer & 0 & 2 \\
+Mean inference latency & Not measured & 25.32 s \\
+\bottomrule\end{tabular}
+\vfill\footnotesize
+Acceptance = accepted / selected problems. Compilation errors and wrong answers count as completed judging, but do not count as accepted.\\
+Astra's Codex workflow has no comparable per-request latency measurement.\\
+Model IDs: \texttt{gpt-6-astra} and \texttt{deepseek-ai/DeepSeek-V4-Flash}.\\
+This ten-problem subset is not a full-benchmark leaderboard score.
+\end{frame}
+\begin{frame}{LiveCodeBench-Pro: Verdicts for All Ten Problems}
+\footnotesize
+\begin{tabular}{llcc}\toprule
+ID & Challenge & GPT-6 Astra & DeepSeek \\\midrule
+1983A & Array Divisibility & Accepted & Accepted \\
+1983B & Corner Twist & Accepted & CE \\
+1983C & Have Your Cake and Eat It Too & Accepted & Accepted \\
+1983D & Swap Dilemma & Accepted & Accepted \\
+1983E & I Love Balls & Accepted & WA \\
+1983F & array-value & Accepted & Accepted \\
+1983G & Your Loss & Accepted & CE \\
+1988A & Split the Multiset & Accepted & CE \\
+1988B & Make Majority & Accepted & CE \\
+1988C & Increasing Sequence with Fixed OR & Accepted & WA \\
+\bottomrule\end{tabular}
+\vfill\footnotesize
+CE = Compilation Error. WA = Wrong Answer.\\
+Astra passed 582/582 recorded judge cases across the ten submissions.\\
+Verdicts use the same judge, dataset revision and problem IDs as DeepSeek.
+\end{frame}
