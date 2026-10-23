@@ -15,9 +15,21 @@ uv sync --group mlx-audio
 uv sync --group mlx-vlm --group mlx-audio
 ```
 
-`start-mlx-vlm.sh` and `start-mlx-audio.sh` select their corresponding group
-automatically. The vLLM Metal launcher is separate because the upstream
-vLLM Metal installer manages `~/.venv-vllm-metal` itself.
+`scripts/start-mlx-vlm.sh` and `scripts/start-mlx-audio.sh` select their
+corresponding group automatically. The vLLM Metal launcher is separate because
+the upstream vLLM Metal installer manages `~/.venv-vllm-metal` itself.
+
+All helper scripts live in `scripts/` and are launched from the repository
+root, for example:
+
+```sh
+./scripts/install-python.sh
+./scripts/install-mlx-vllm.sh
+./scripts/update-mlx-vllm.sh
+./scripts/start-mlx-vllm.sh
+./scripts/start-mlx-vlm.sh
+./scripts/start-mlx-audio.sh
+```
 
 ## Notebooks
 
@@ -62,10 +74,14 @@ Base URLs may include a trailing `/v1`; credentials belong in the API-key enviro
 uv run python livecodebench.py check
 uv run python livecodebench.py run
 uv run python livecodebench.py render
-cd presentation
-pdflatex -interaction=nonstopmode -halt-on-error presentation.tex
-pdflatex -interaction=nonstopmode -halt-on-error presentation.tex
+./scripts/build-tex.sh presentation/presentation.tex
 ```
+
+The build script uses a temporary directory for all LaTeX intermediate files
+and publishes only `presentation/pdfs/presentation.pdf`. In VS Code, the
+recommended LaTeX Workshop extension runs this same build automatically when a
+TeX file is saved. Other standalone documents in `presentation/` are published
+under the corresponding name in `presentation/pdfs/`.
 
 The amd64 sandbox on this Apple Silicon Docker Desktop setup failed with `install seccomp in container init: invalid argument` under emulation. Use the native ARM64 build on this Mac, keeping seccomp enabled. If the native check also fails, it prints the sandbox startup logs and stops before inference. A native Linux host remains an alternative; its inference URLs must point to reachable servers rather than this Mac's localhost.
 

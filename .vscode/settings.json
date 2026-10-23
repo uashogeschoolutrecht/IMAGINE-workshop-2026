@@ -17,5 +17,28 @@
   "notebook.codeActionsOnSave": {
     "notebook.source.fixAll": "explicit",
     "notebook.source.organizeImports": "explicit"
-  }
+  },
+  "latex-workshop.latex.autoBuild.run": "onSave",
+  "latex-workshop.latex.build.enableMagicComments": false,
+  "latex-workshop.latex.outDir": "%DIR%/pdfs",
+  "latex-workshop.latex.recipe.default": "first",
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "Build PDF in presentation/pdfs",
+      "tools": [
+        "workshop-pdf"
+      ]
+    }
+  ],
+  "latex-workshop.latex.tools": [
+    {
+      "name": "workshop-pdf",
+      "command": "/bin/sh",
+      "args": [
+        "%DIR%/../scripts/build-tex.sh",
+        "%DOC_EXT%"
+      ],
+      "env": {}
+    }
+  ]
 }
