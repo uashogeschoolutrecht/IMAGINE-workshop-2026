@@ -9,6 +9,10 @@ wheels/
 # Virtual environments
 .venv
 .venv-vllm
+.lsp/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
 
 # External benchmark checkout and response artifacts
 .benchmark/

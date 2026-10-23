@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+[[ "$(uname -s)" == "Darwin" && "$(uname -m)" == "arm64" ]] || {
+    printf 'vLLM Metal requires native Apple Silicon macOS.\n' >&2
+    exit 1
+}
+command -v curl >/dev/null 2>&1 || { printf 'Install curl first.\n' >&2; exit 1; }
+
 readonly VENV="$HOME/.venv-vllm-metal"
 readonly INSTALLER_URL="https://raw.githubusercontent.com/vllm-project/vllm-metal/main/install.sh"
 
@@ -23,9 +29,8 @@ else
 fi
 
 # This is the default installation method recommended by vllm-metal. The
-# upstream installer creates the virtual environment when needed and reuses it
-# on later runs, upgrading packages when a newer development build is available.
-curl -fsSL "$INSTALLER_URL" | bash
+# upstream stable installer creates the environment and updates it on later runs.
+curl -fsSL "$INSTALLER_URL" | bash -s -- --stable
 
 after_version="$(installed_version || true)"
 if [[ -z "$after_version" ]]; then
@@ -41,4 +46,4 @@ else
     printf 'Updated vllm-metal from %s to %s.\n' "$before_version" "$after_version"
 fi
 
-printf 'Activate it with: source %s/bin/activate\n' "$VENV"
+printf 'Start it with: ./scripts/start-mlx-vllm.sh\n'

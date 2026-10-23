@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Usage: ./scripts/start-mlx-vlm.sh [audio-file] [prompt]
+# Usage: ./scripts/start-mlx-vlm.sh audio-file [prompt]
 # Syncs the mlx-vlm dependency group into the project's shared .venv, then
 # runs one audio inference.
 # Use clips under 30 seconds; the notebook splits longer recordings.
 PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-AUDIO_PATH="${1:-$PROJECT_DIR/data/Zie-het-verschil-GrandOptical_1080p.mp3}"
+if (( $# < 1 || $# > 2 )); then
+    printf 'Usage: %s audio-file [prompt]\nUse a clip of at most 28 seconds, or the notebook for longer audio.\n' "$0" >&2
+    exit 2
+fi
+AUDIO_PATH="$1"
 PROMPT="${2:-Transcribe this Dutch audio verbatim into Dutch text. Output only the transcription.}"
 MODEL_NAME="${MODEL_NAME:-google/gemma-4-E4B-it}"
 

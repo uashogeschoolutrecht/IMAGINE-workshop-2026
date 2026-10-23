@@ -25,7 +25,7 @@ DATASET = "QAQAQAQAQ/LiveCodeBench-Pro"
 DEFAULTS = {
     "vllm": ("http://localhost:8000", "mlx-community/gemma-4-e4b-it-4bit"),
     "ollama": ("http://localhost:11434", "gemma4:26b"),
-    "spark": ("http://spark-0240:8000", "deepseek-ai/DeepSeek-V4-Flash"),
+    "spark": ("http://spark-0240:9000", "deepseek-ai/DeepSeek-V4-Flash"),
 }
 LABELS = {"vllm": "Local vLLM", "ollama": "Ollama", "spark": "Spark"}
 FAILURES = {"Model Failed", "No Code", "Judge Failed", "Judge Timeout"}

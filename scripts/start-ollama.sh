@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-readonly MODEL_NAME="gemma4:26b"
+if (( $# > 1 )); then
+    printf 'Usage: %s [model]\n' "$0" >&2
+    exit 2
+fi
+MODEL_NAME="${1:-gemma4:26b}"
+# Ollama reports untagged names with :latest in `ollama ps`.
+[[ "${MODEL_NAME##*/}" == *:* ]] || MODEL_NAME="${MODEL_NAME}:latest"
+[[ "$MODEL_NAME" =~ ^[a-zA-Z0-9][a-zA-Z0-9._:/-]*$ ]] || {
+    printf 'Invalid Ollama model name: %s\n' "$MODEL_NAME" >&2
+    exit 2
+}
+readonly MODEL_NAME
 readonly OLLAMA_API_BASE="http://127.0.0.1:11434"
 readonly STARTUP_ATTEMPTS=60
 server_pid=""
@@ -73,7 +84,7 @@ preload_model() {
     curl --fail --silent --show-error \
         --max-time 1800 \
         --header 'Content-Type: application/json' \
-        --data '{"model":"gemma4:26b","stream":false,"keep_alive":-1}' \
+        --data "{\"model\":\"$MODEL_NAME\",\"stream\":false,\"keep_alive\":-1}" \
         "$OLLAMA_API_BASE/api/generate" >/dev/null
 }
 
@@ -89,17 +100,23 @@ check_model_uses_gpu() {
     [[ -n "$model_line" ]] || \
         fail "$MODEL_NAME was pulled but is not loaded."
     [[ "$model_line" == *GPU* ]] || \
-        fail "$MODEL_NAME is not using the CUDA GPU: $model_line"
+        fail "$MODEL_NAME is not using GPU acceleration: $model_line"
 
     printf 'Loaded model:\n  %s\n' "$model_line"
 }
 
-[[ "$(uname -s)" == "Linux" ]] || \
-    fail "This Ollama launcher requires Linux."
+case "$(uname -s)" in
+    Darwin)
+        [[ "$(uname -m)" == "arm64" ]] || fail "Use a native Apple Silicon terminal."
+        ;;
+    Linux)
+        require_command nvidia-smi "Install a compatible NVIDIA driver."
+        check_cuda_gpu
+        ;;
+    *) fail "This workshop supports Apple Silicon macOS and Linux with CUDA." ;;
+esac
 require_command ollama "Install it with: bash ./scripts/install-ollama.sh"
 require_command curl "Install curl with the system package manager."
-require_command nvidia-smi "Install a compatible NVIDIA driver."
-check_cuda_gpu
 
 # Keep the CLI and the notebook on the same loopback endpoint.
 export OLLAMA_HOST="127.0.0.1:11434"
@@ -121,6 +138,8 @@ preload_model
 check_model_uses_gpu
 
 printf '\nOllama is ready for notebooks/local-llm-ollama.ipynb.\n'
+printf 'Set OLLAMA_MODEL=%s in the notebook setup or before starting Jupyter.\n' "$MODEL_NAME"
+printf 'Unload the model after use: ollama stop %s\n' "$MODEL_NAME"
 if [[ -z "$server_pid" ]]; then
     exit 0
 fi

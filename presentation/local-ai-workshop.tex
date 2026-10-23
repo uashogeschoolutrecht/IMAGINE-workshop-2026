@@ -1,7 +1,7 @@
 % !TEX program = pdflatex
 % Eleven slides following presentation/outline.md, including the title slide.
 % Build from the repository root: ./scripts/build-tex.sh presentation/local-ai-workshop.tex
-% latexmk resolves the total slide count. The old deck remains separate.
+% latexmk resolves the total slide count. The earlier full deck is retained on the main branch.
 \documentclass[aspectratio=169,12pt]{beamer}
 \usetheme{Madrid}
 \usecolortheme{default}
@@ -130,7 +130,8 @@ Ten contest problems, with one C++ solution attempt per problem.\par
 GPT-6 Astra provides a separate cloud comparison.
 \source{Sources: original presentation, transcription notebooks and saved LiveCodeBench-Pro results.
 The five-question test is a smoke test, without a systematic correctness score.}
-\note{Five-question prompts and metrics reuse presentation/presentation.tex.
+\note{Five-question prompts and metrics reuse the historical full deck,
+available as presentation/presentation.tex on the main branch.
 Audio: notebooks/local-llm-whisper.ipynb, notebooks/local-vlm-gemma.ipynb,
 notebooks/local-llm-qwen-omni.ipynb.
 Coding: benchmark-results/ollama.json and benchmark-results/spark.json.
@@ -167,13 +168,14 @@ Spark finished all five responses with \texttt{stop}.
 \source{Reused from the original deck's 7 October 2026 snapshot.
 Token budgets: 150 / 800 / 800. Different models, tokenizers and reasoning limit comparisons.
 Completion rate = total completion tokens / total request time.}
-\note{Source: presentation/presentation.tex, frames Per-Request End-to-End Latency,
+\note{Source: historical presentation/presentation.tex on the main branch, frames Per-Request End-to-End Latency,
 Latency Summary, Token Counts and Throughput, and Response Completeness Matters.
 The user specifically requested the original presentation's first-test results.
 The current notebooks/local-llm-spark-cluster.ipynb contains a newer five-question run,
 so this slide deliberately retains the dated original snapshot.
-The local vLLM notebook does not retain finish reasons. Three visible answers
-end mid-response at the 150-token limit. Ollama has two length finish reasons.
+The historical local vLLM notebook on the main branch did not retain finish
+reasons. Three visible answers end mid-response at the 150-token limit.
+The current notebook collects new measurements independently of Spark. Ollama has two length finish reasons.
 Spark has five stop finish reasons. Completion does not establish correctness.}
 \end{frame}
 
