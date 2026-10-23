@@ -379,6 +379,8 @@ Spark means **NVIDIA DGX Spark**, not Apache Spark or PySpark. You do not need a
 
 The notebooks retain labeled historical outputs where relevant. **Saved output is not evidence that your current server has run successfully.** Restart and run all cells to generate a new result. The slides preserve their dated measurements; changing models or running notebooks does not update slide numbers automatically.
 
+On **23 October 2026**, validation on an M1 Pro with 32 GB memory reproduced **12.00% Whisper WER** and **7.78% Gemma MLX-VLM WER** on the complete workshop recording against both matching curated references. Both text notebooks returned five visible answers; default token limits truncated three vLLM answers and two Ollama answers. The run used the installed vLLM Metal development build; the stable installer was not rerun. This validates that machine, without establishing a fresh-install or minimum-memory guarantee. Executed notebooks, logs and runtime details are retained locally in the ignored `validation/` directory.
+
 ## 8. Optional exercises and troubleshooting
 
 ### LiveCodeBench-Pro coding evaluation

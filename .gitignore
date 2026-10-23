@@ -18,6 +18,7 @@ wheels/
 .benchmark/
 benchmark-results/
 data/
+validation/
 
 # Presentation sources, notes, and rendered output only
 presentation/**
