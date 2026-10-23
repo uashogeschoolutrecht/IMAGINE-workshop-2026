@@ -2518,6 +2518,10 @@ wheels = [
 name = "workshop-local-llm"
 version = "0.1.0"
 source = { virtual = "." }
+dependencies = [
+    { name = "ipykernel" },
+    { name = "ipywidgets" },
+]
 
 [package.dev-dependencies]
 default = [
@@ -2572,6 +2576,10 @@ mlx-vlm = [
 ]
 
 [package.metadata]
+requires-dist = [
+    { name = "ipykernel", specifier = ">=7.3.0" },
+    { name = "ipywidgets", specifier = ">=8.1.9" },
+]
 
 [package.metadata.requires-dev]
 default = [

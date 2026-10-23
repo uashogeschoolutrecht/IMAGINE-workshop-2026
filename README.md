@@ -2,10 +2,45 @@
 
 A hands-on starting point for running and testing local LLMs with Ollama and vLLM, alongside a Spark-hosted endpoint. The workshop notebooks retain the existing smoke benchmarks and transcription evaluations; the Beamer presentation compares their saved outputs.
 
+## Choose a local vLLM backend
+
+Choose the backend that matches the host:
+
+| Host | Backend | Environment | Install | Start |
+| --- | --- | --- | --- | --- |
+| Linux with an NVIDIA CUDA GPU | CUDA vLLM | Repository-local `.venv-vllm` | `./scripts/install-cuda-vllm.sh` | `./scripts/start-cuda-vllm.sh` |
+| Apple Silicon | vLLM Metal with MLX | `~/.venv-vllm-metal` | `./scripts/install-mlx-vllm.sh` | `./scripts/start-mlx-vllm.sh` |
+
+The CUDA installer validates the CUDA Toolkit, NVIDIA driver, GPU, and a real
+PyTorch CUDA operation. Its launcher serves `google/gemma-4-E4B-it` by
+default. The MLX launcher serves `mlx-community/gemma-4-e4b-it-4bit` by
+default. Pass another model as the first argument to either launcher:
+
+```sh
+./scripts/start-cuda-vllm.sh MODEL_NAME
+./scripts/start-mlx-vllm.sh MODEL_NAME
+```
+
+Both launchers start the server on vLLM's default port, `8000`.
+
+## Start Ollama on Linux with CUDA
+
+After installing Ollama, start its local API with `gemma4:26b`:
+
+```sh
+./scripts/start-ollama.sh
+```
+
+The launcher checks the NVIDIA GPU, starts or reuses Ollama on
+`http://localhost:11434`, pulls the model when needed, preloads it, and
+verifies that Ollama is using the GPU. Keep its terminal open while running
+`notebooks/local-llm-ollama.ipynb`.
+
 ## Python environment
 
-The project uses one shared `.venv`. The default dependencies are installed by
-`uv sync`; add either MLX use case to that same environment when needed:
+The notebooks and workshop tooling use a shared `.venv`, separate from both
+vLLM server environments above. Install the default dependencies with
+`uv sync`; add either MLX use case to the shared environment when needed:
 
 ```sh
 uv sync
@@ -16,19 +51,21 @@ uv sync --group mlx-vlm --group mlx-audio
 ```
 
 `scripts/start-mlx-vlm.sh` and `scripts/start-mlx-audio.sh` select their
-corresponding group automatically. The vLLM Metal launcher is separate because
-the upstream vLLM Metal installer manages `~/.venv-vllm-metal` itself.
+corresponding group automatically.
 
 All helper scripts live in `scripts/` and are launched from the repository
 root, for example:
 
 ```sh
 ./scripts/install-python.sh
+./scripts/install-cuda-vllm.sh
+./scripts/start-cuda-vllm.sh
 ./scripts/install-mlx-vllm.sh
 ./scripts/update-mlx-vllm.sh
 ./scripts/start-mlx-vllm.sh
 ./scripts/start-mlx-vlm.sh
 ./scripts/start-mlx-audio.sh
+./scripts/start-ollama.sh
 ```
 
 ## Notebooks
