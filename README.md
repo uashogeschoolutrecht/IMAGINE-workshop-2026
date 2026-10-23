@@ -329,7 +329,18 @@ ffmpeg -version
 
 **Workshop download: [Audio recording and curated TXT/SRT references (ZIP)](https://filesender.surf.nl/?s=download&token=a2eafe0d-d472-4bc1-a497-1c6b70943524)**
 
-Open the link in your browser and download `UMC Utrecht - Jeroen Hendrikse - radiologieverslag.zip`. The recording and two curated reference transcripts are not included in Git.
+The download page is **password protected**. Obtain the password from the presenter, open the link in your browser, enter the password when prompted, and download `UMC Utrecht - Jeroen Hendrikse - radiologieverslag.zip`. The recording and two curated reference transcripts are not included in Git.
+
+You can keep the password locally in `.secrets/audio-download-password.txt`. The entire `.secrets/` directory is ignored by Git, so this file is not included when cloning the repository. To create it in a fresh checkout, run from the repository root:
+
+```sh
+mkdir -p .secrets
+chmod 700 .secrets
+touch .secrets/audio-download-password.txt
+chmod 600 .secrets/audio-download-password.txt
+```
+
+Open the file in your editor and put only the download password on its first line, replacing any placeholder. Copy it into the download page when prompted; the notebooks do not read this file. Keep the password out of tracked files and share it separately from the repository.
 
 From the **repository root** (the folder containing this README), run the following on Mac or Linux after setting up the notebook environment in section 3. This assumes the ZIP was saved in `~/Downloads`; adjust the ZIP path if your browser used a different name or location. Keep the quotes because the paths contain spaces.
 

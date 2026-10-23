@@ -1,6 +1,9 @@
 # macOS metadata
 **/.DS_Store
 
+# Local passwords and other secrets
+/.secrets/
+
 # Python-generated files
 __pycache__/
 *.py[oc]
