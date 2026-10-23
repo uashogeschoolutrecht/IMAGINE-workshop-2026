@@ -192,25 +192,36 @@ Jeroen Hendrikse, UMC Utrecht: \emph{radiologieverslag}\par
 \textbf{Model} & \textbf{Runtime / hardware} & \textbf{WER} $\downarrow$ & \textbf{Time} \\
 \midrule
 Whisper large-v3\newline\modelid{openai/whisper-large-v3}
- & vLLM Metal\newline Apple Silicon & 12.00\% & Not recorded \\
+ & vLLM Metal\newline Apple M1 Pro & 11.93\% & 53.4\,s \\
 \addlinespace[0.8em]
 \textbf{Gemma 4 E4B}\newline\modelid{google/gemma-4-E4B-it}
- & MLX-VLM\newline Apple Silicon & \textbf{7.78\%} & 144.3\,s \\
+ & MLX-VLM\newline Apple Silicon & \textbf{7.70\%} & 144.3\,s \\
 \addlinespace[0.8em]
 Qwen3-Omni 30B A3B\newline\modelid{Qwen/Qwen3-Omni-30B-A3B-Instruct}
- & vLLM\newline 1 DGX Spark & 8.44\% & 98.1\,s \\
+ & vLLM\newline 1 DGX Spark & 8.52\% & 98.1\,s \\
 \bottomrule
 \end{tabularx}
 \par\medskip
-Gemma has the lowest WER. Qwen finishes the transcription loop sooner.
-\source{Sources: saved outputs of notebooks/local-llm-whisper.ipynb,
-notebooks/local-vlm-gemma.ipynb and notebooks/local-llm-qwen-omni.ipynb.
-Time covers the transcription loop, excluding model loading and
-initial audio decoding. Whisper's notebook does not time the request.}
-\note{All scores verified against current saved outputs on 21 October 2026.
-Whisper cell index 7: 162/1350 = 12.00 percent.
-Gemma cell index 7: 105/1350 = 7.78 percent; cell 3: 144.3 seconds.
-Qwen cell index 7: 114/1350 = 8.44 percent; cell 3: 98.1 seconds.
+Gemma has the lowest WER. Whisper has the shortest recorded time.
+\source{Sources: saved transcription notebooks, re-scored 23 October 2026;
+Whisper timing: Apple Silicon validation, 23 October 2026.
+Whisper: full transcription request cell. Gemma/Qwen: chunk loops, excluding
+model loading and initial audio decoding. Different runtimes and timing scopes.}
+\note{Saved transcriptions re-evaluated against the revised TXT and SRT on 23 October 2026.
+The downloaded archive matches the local ZIP; the MP3 is unchanged.
+Both references still normalize to the same 1350 words. Inference was not rerun.
+Whisper cell index 7: 161/1350 = 11.93 percent.
+Whisper timing comes from validation/apple-silicon-2026-10-23/local-llm-whisper.ipynb,
+cell index 3: iopub.status.busy at 10:22:16.977266 UTC and iopub.status.idle
+at 10:23:10.393404 UTC on 23 October 2026: 53.416138 seconds, rounded to 53.4.
+This cell includes opening the MP3, the complete HTTP transcription request,
+and response parsing/checking. The server was already loaded on an Apple M1 Pro
+with 32 GiB memory. Total notebook time was 55.383441 seconds, not the table's measure.
+The validation transcription exactly matches the retained source notebook output.
+Gemma cell index 7: 104/1350 = 7.70 percent; cell 3: 144.3 seconds.
+Qwen cell index 7: 115/1350 = 8.52 percent; cell 3: 98.1 seconds.
+Reference SHA-256 hashes are retained in each notebook's final cell;
+local re-evaluation evidence is in validation/audio-reference-update-2026-10-23/.
 Gemma and Qwen use the same 18 chunks, maximum 28 seconds, and the same prompt.
 Whisper submits the complete MP3 to /v1/audio/transcriptions with language nl.
 All use temperature 0. These are measured pipelines with different hardware and
@@ -229,15 +240,15 @@ preprocessing paths, not an isolated test of model size or backend speed.}
 \toprule
 \textbf{Model} & \textbf{Substitutions} & \textbf{Deletions} & \textbf{Insertions} & \textbf{Total} \\
 \midrule
-Whisper large-v3 & 86 & 41 & 35 & 162 \\
-\textbf{Gemma 4 E4B} & 69 & 21 & 15 & \textbf{105} \\
-Qwen3-Omni & 73 & 15 & 26 & 114 \\
+Whisper large-v3 & 85 & 41 & 35 & 161 \\
+\textbf{Gemma 4 E4B} & 68 & 21 & 15 & \textbf{104} \\
+Qwen3-Omni & 74 & 15 & 26 & 115 \\
 \bottomrule
 \end{tabular}
 \par\bigskip
 \raggedright
-\lead{Gemma: 9 fewer word errors than Qwen}\par
-7.78\% versus 8.44\% WER: a \textbf{0.67 percentage-point} gap
+\lead{Gemma: 11 fewer word errors than Qwen}\par
+7.70\% versus 8.52\% WER: a \textbf{0.81 percentage-point} gap
 using the unrounded scores.
 \par\medskip
 
@@ -247,10 +258,10 @@ and repetitions. Curated TXT and SRT references yield identical scores.
 inference pipelines. This small difference does not establish a general model ranking.
 WER counts word differences without weighting their clinical meaning.}
 \note{Reuses and updates the original Audio Evaluation slide.
-Absolute gap: (114-105)/1350*100 = 0.6666667 percentage points.
-Relative error reduction: 9/114 = 7.8947 percent (not displayed).
-The displayed WER values round independently, so their difference rounds to 0.66;
-the slide's 0.67 pp uses the underlying integer counts.
+Absolute gap: (115-104)/1350*100 = 0.8148148 percentage points.
+Relative error reduction: 11/115 = 9.5652 percent (not displayed).
+The displayed WER values round independently, so their difference is 0.82;
+the slide's 0.81 pp uses the underlying integer counts.
 The scoring routine implements word-level minimum edit distance after NFKC
 normalization and case folding. Reference editorial choices can affect WER.}
 \end{frame}

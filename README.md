@@ -327,7 +327,7 @@ Gemma and Qwen use **ffmpeg** to decode the MP3 and split it into chunks. Instal
 ffmpeg -version
 ```
 
-**Workshop download: [Audio recording and curated TXT/SRT references (ZIP)](https://filesender.surf.nl/?s=download&token=a2eafe0d-d472-4bc1-a497-1c6b70943524)**
+**Workshop download: [Audio recording and curated TXT/SRT references (ZIP)](https://filesender.surf.nl/?s=download&token=6bb9043e-93ab-4cba-bb4a-2e61ebcebadf)**
 
 The download page is **password protected**. Obtain the password from the presenter, open the link in your browser, enter the password when prompted, and download `UMC Utrecht - Jeroen Hendrikse - radiologieverslag.zip`. The recording and two curated reference transcripts are not included in Git.
 
@@ -373,6 +373,16 @@ Gemma and Qwen decode to mono 16 kHz WAV and split at pauses where possible, wit
 
 `WER = (substitutions + deletions + insertions) / reference words`
 
+The saved transcriptions were re-evaluated on **23 October 2026** against the updated download. Both curated references still normalize to the same **1,350 words** and give identical scores:
+
+| Model | WER (TXT and SRT) | Substitutions | Deletions | Insertions | Total errors |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Whisper large-v3 | 11.93% | 85 | 41 | 35 | 161 |
+| Gemma 4 E4B (MLX-VLM) | 7.70% | 68 | 21 | 15 | 104 |
+| Qwen3-Omni 30B A3B | 8.52% | 74 | 15 | 26 | 115 |
+
+The audio, model outputs, normalization, and original inference timings are unchanged; inference was not rerun. Each notebook's final cell retains the transcription, reference SHA-256 hashes, both scores, and reference agreement.
+
 References are used only for scoring. To use your own recording, edit the three paths and supply matching transcripts; the workshop's reference text cannot score a different recording meaningfully.
 
 ## 7. Which notebook should I run?
@@ -401,7 +411,7 @@ Spark means **NVIDIA DGX Spark**, not Apache Spark or PySpark. You do not need a
 
 The notebooks retain labeled historical outputs where relevant. **Saved output is not evidence that your current server has run successfully.** Restart and run all cells to generate a new result. The slides preserve their dated measurements; changing models or running notebooks does not update slide numbers automatically.
 
-On **23 October 2026**, validation on an M1 Pro with 32 GB memory reproduced **12.00% Whisper WER** and **7.78% Gemma MLX-VLM WER** on the complete workshop recording against both matching curated references. Both text notebooks returned five visible answers; default token limits truncated three vLLM answers and two Ollama answers. The run used the installed vLLM Metal development build; the stable installer was not rerun. This validates that machine, without establishing a fresh-install or minimum-memory guarantee. Executed notebooks, logs and runtime details are retained locally in the ignored `validation/` directory.
+On **23 October 2026**, validation on an M1 Pro with 32 GB memory completed Whisper and Gemma MLX-VLM transcription of the full workshop recording. Re-evaluating those saved outputs against the revised references later that day gives **11.93% Whisper WER** and **7.70% Gemma MLX-VLM WER**, with matching TXT and SRT scores. Both text notebooks returned five visible answers; default token limits truncated three vLLM answers and two Ollama answers. The run used the installed vLLM Metal development build; the stable installer was not rerun. This validates that machine, without establishing a fresh-install or minimum-memory guarantee. Executed notebooks, logs and runtime details are retained locally in the ignored `validation/` directory; the original validation evidence uses the earlier references, and the revised scores and reference hashes are recorded separately in `validation/audio-reference-update-2026-10-23/`.
 
 ## 8. Optional exercises and troubleshooting
 
