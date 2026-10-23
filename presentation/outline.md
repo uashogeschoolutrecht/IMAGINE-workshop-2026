@@ -69,4 +69,14 @@ Gemma 4 31B
 
 - Slide 11
 
+Title: "Embeddings: meaning as coordinates". Explain embeddings as vectors (lists of numbers), with similar meanings tending to occupy nearby positions in a high-dimensional space. Introduce E(King) + E(Woman) - E(Man) approximately E(Queen), where E maps a word to its embedding vector, following [3Blue1Brown's lesson](https://www.3blue1brown.com/lessons/gpt/).
+
+Make this an open-ended audience quiz: "Holland + Fries - Kroket approximately ? Which country?" Show an editable TikZ diagram with parallel displacements Kroket to Fries and Holland to the unknown country, both labelled + Fries - Kroket. On the next click, reveal Belgium and "Add the fries association and subtract the kroket association." Keep the layout fixed across the two overlays.
+
+Caption the image "Illustrative 2D embedding space; not a measured model result." Explain in the presenter notes that the snack analogy is invented, approximate, and not a measured EmbeddingGemma result. Connect the intuition back to RAG: EmbeddingGemma represents questions and document chunks in a shared space for similarity-based retrieval. Cite the [EmbeddingGemma model card](https://huggingface.co/google/embeddinggemma-300m).
+
+The deck has 12 logical slides and 13 PDF pages. Both quiz overlays display slide number 11 / 12.
+
+- Slide 12
+
 Finally there's a handover to the next presenter, who will introduce an Agentic orchestrator for use in clinical imaging practice.
