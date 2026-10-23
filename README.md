@@ -327,9 +327,20 @@ Gemma and Qwen use **ffmpeg** to decode the MP3 and split it into chunks. Instal
 ffmpeg -version
 ```
 
-**Workshop download: `TODO: INSERT WORKSHOP AUDIO + CURATED TXT/SRT DOWNLOAD URL`**
+**Workshop download: [Audio recording and curated TXT/SRT references (ZIP)](https://filesender.surf.nl/?s=download&token=a2eafe0d-d472-4bc1-a497-1c6b70943524)**
 
-The presenter will supply the recording and two curated reference transcripts through that link. They are not included in Git. Download and extract them into the following exact layout (names include spaces):
+Open the link in your browser and download `UMC Utrecht - Jeroen Hendrikse - radiologieverslag.zip`. The recording and two curated reference transcripts are not included in Git.
+
+From the **repository root** (the folder containing this README), run the following on Mac or Linux after setting up the notebook environment in section 3. This assumes the ZIP was saved in `~/Downloads`; adjust the ZIP path if your browser used a different name or location. Keep the quotes because the paths contain spaces.
+
+```sh
+mkdir -p "data/UMC Utrecht - Jeroen Hendrikse - radiologieverslag"
+uv run --no-sync python -m zipfile -e \
+  "$HOME/Downloads/UMC Utrecht - Jeroen Hendrikse - radiologieverslag.zip" \
+  "data/UMC Utrecht - Jeroen Hendrikse - radiologieverslag"
+```
+
+The ZIP contains the files directly, so extract into that named folder, not just `data/` or `notebooks/`. If you prefer Finder or a file manager, extract the ZIP and place the three files in the same destination. The required layout is:
 
 ```text
 data/
@@ -339,13 +350,13 @@ data/
     └── UMC Utrecht - Jeroen Hendrikse - radiologieverslag - curated.srt
 ```
 
-Create the destination if necessary:
+Verify the extracted files:
 
 ```sh
-mkdir -p "data/UMC Utrecht - Jeroen Hendrikse - radiologieverslag"
+ls "data/UMC Utrecht - Jeroen Hendrikse - radiologieverslag"
 ```
 
-The notebooks check for all three files before inference. The download placeholder must be filled in, or the files supplied separately, before participants can complete the audio exercises. Text exercises work without these files.
+You should see the MP3, curated TXT, and curated SRT shown above. An extra `__MACOSX` folder contains archive metadata and can be ignored. Avoid an extra nested folder with the same recording name: the three files must sit directly in the folder shown. The notebooks check for all three files before inference. Text exercises work without these files.
 
 Gemma and Qwen decode to mono 16 kHz WAV and split at pauses where possible, with a maximum of 28 seconds per chunk. Whisper receives the full MP3. Each notebook prints the transcription and compares it with the curated TXT and SRT using **word error rate**:
 
