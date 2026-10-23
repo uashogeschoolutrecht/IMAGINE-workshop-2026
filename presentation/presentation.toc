@@ -1,6 +1,0 @@
-\beamer@sectionintoc {1}{Setup \& Scope}{4}{0}{1}
-\beamer@sectionintoc {2}{Latency}{6}{0}{2}
-\beamer@sectionintoc {3}{Throughput}{8}{0}{3}
-\beamer@sectionintoc {4}{Response Completeness \& Text Metrics}{9}{0}{4}
-\beamer@sectionintoc {5}{LiveCodeBench-Pro}{13}{0}{5}
-\beamer@sectionintoc {6}{Summary}{16}{0}{6}

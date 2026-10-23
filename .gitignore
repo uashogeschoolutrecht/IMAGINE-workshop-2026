@@ -12,3 +12,11 @@ wheels/
 # External benchmark checkout and response artifacts
 .benchmark/
 benchmark-results/
+data/
+
+# Presentation sources, notes, and rendered output only
+presentation/**
+!presentation/**/
+!presentation/**/*.tex
+!presentation/**/*.pdf
+!presentation/**/*.md
