@@ -223,8 +223,8 @@ Inception & Setup; cut off mid-sentence & Premise; cut off mid-sentence & Full-l
 \footnotesize Completeness and lexical diversity do not prove factual accuracy. The local robotics response changes the law wording; the quantum analogies warrant a separate factual review. No systematic correctness evaluation was performed.
 \end{frame}
 \section{Audio Transcription}
-% Sources: local-llm-gemma.ipynb and local-llm-qwen-omni.ipynb saved outputs.
-% Whisper: earlier executed local-llm-whisper.ipynb run recorded in this session:
+% Sources: notebooks/local-vlm-gemma.ipynb and notebooks/local-llm-qwen-omni.ipynb saved outputs.
+% Whisper: earlier executed notebooks/local-llm-whisper.ipynb run recorded in this session:
 % 86 substitutions + 41 deletions + 35 insertions = 162 / 1350 = 12.00%.
 % Whisper notebook outputs were cleared before this presentation update.
 \begin{frame}{Dutch Audio: Models, Locations and WER}
@@ -300,9 +300,9 @@ These snapshots show tradeoffs in output length, reasoning and completion. They 
 \begin{frame}{Sources and Questions}
 \small
 \begin{itemize}
-\item \texttt{local-llm-vllm.ipynb}: local benchmark output in cell index 1.
-\item \texttt{local-llm-ollama.ipynb}: benchmark in cell index 8; visible answers in cell index 10.
-\item \texttt{local-llm-spark-cluster.ipynb}: benchmark in cell index 8; visible answers in cell index 10.
+\item \texttt{notebooks/local-llm-vllm.ipynb}: local benchmark output in cell index 1.
+\item \texttt{notebooks/local-llm-ollama.ipynb}: benchmark in cell index 8; visible answers in cell index 10.
+\item \texttt{notebooks/local-llm-spark-cluster.ipynb}: benchmark in cell index 8; visible answers in cell index 10.
 \end{itemize}
 \begin{block}{Scope of this update}
 Smoke-test metrics use saved notebook outputs from 7 October 2026. Coding results use Ollama's 8 October run and Spark's 20 October run on port 9000. Historical Spark comparisons and separate completion-endpoint queries inside the local vLLM notebook are excluded.

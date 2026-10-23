@@ -68,8 +68,9 @@ Runtime references: \href{https://github.com/vllm-project/vllm-metal}{vLLM Metal
 \href{https://github.com/Blaizzy/mlx-vlm}{MLX-VLM},
 \href{https://docs.ollama.com/quickstart}{Ollama}.}
 \note{Sources: presentation/outline.md slide 2; start-mlx-vllm.sh; start-mlx-vlm.sh;
-local-llm-vllm.ipynb, local-llm-ollama.ipynb, local-llm-whisper.ipynb,
-local-llm-gemma.ipynb, local-llm-spark-cluster.ipynb.
+notebooks/local-llm-vllm.ipynb, notebooks/local-llm-ollama.ipynb,
+notebooks/local-llm-whisper.ipynb, notebooks/local-vlm-gemma.ipynb,
+notebooks/local-llm-spark-cluster.ipynb.
 The no-audio label describes the workshop vLLM Gemma configuration, not every
 Gemma 4 model or current vLLM implementation. vLLM Metal is the Apple Silicon
 plugin using MLX. References checked 21 October 2026:
@@ -88,7 +89,7 @@ plugin using MLX. References checked 21 October 2026:
 \addlinespace[0.3em]
 \textbf{Apple Silicon + vLLM Metal} & A local model service for notebooks and apps & \modelid{./start-mlx-vllm.sh}\newline API at \modelid{localhost:8000} \\
 \addlinespace[0.3em]
-\textbf{Apple Silicon + MLX-VLM} & Direct Python inference, including Gemma audio & \modelid{local-llm-gemma.ipynb} \\
+\textbf{Apple Silicon + MLX-VLM} & Direct Python inference, including Gemma audio & \modelid{notebooks/}\newline\modelid{local-vlm-gemma.ipynb} \\
 \addlinespace[0.3em]
 \textbf{DGX Spark + vLLM} & Connect over VPN and call the remote model service & Change the API base URL to Spark \\
 \bottomrule
@@ -99,8 +100,8 @@ Gemma's saved local model load: \textbf{4.8 seconds}.
 \source{Sources: local launch scripts and notebooks. Spark audio uses 1 DGX Spark.
 DeepSeek uses 2 DGX Sparks. Hardware and VPN configuration follow the workshop outline.}
 \note{Sources: presentation/outline.md slide 3; start-mlx-vllm.sh;
-local-llm-gemma.ipynb cell index 2 records a 4.8 s load;
-local-llm-qwen-omni.ipynb uses spark-0240:8000;
+notebooks/local-vlm-gemma.ipynb cell index 2 records a 4.8 s load;
+notebooks/local-llm-qwen-omni.ipynb uses spark-0240:8000;
 benchmark-results/spark.json uses spark-0240:9000.
 First-time installation, downloads, service startup and model loading are distinct
 from warm inference. These launch commands assume setup is complete.}
@@ -130,7 +131,8 @@ GPT-6 Astra provides a separate cloud comparison.
 \source{Sources: original presentation, transcription notebooks and saved LiveCodeBench-Pro results.
 The five-question test is a smoke test, without a systematic correctness score.}
 \note{Five-question prompts and metrics reuse presentation/presentation.tex.
-Audio: local-llm-whisper.ipynb, local-llm-gemma.ipynb, local-llm-qwen-omni.ipynb.
+Audio: notebooks/local-llm-whisper.ipynb, notebooks/local-vlm-gemma.ipynb,
+notebooks/local-llm-qwen-omni.ipynb.
 Coding: benchmark-results/ollama.json and benchmark-results/spark.json.
 Ollama has 10 No Code responses. Local vLLM was not run in the saved judged comparison.
 GPT-6 Astra's later Codex-session evaluation is recorded in
@@ -168,7 +170,7 @@ Completion rate = total completion tokens / total request time.}
 \note{Source: presentation/presentation.tex, frames Per-Request End-to-End Latency,
 Latency Summary, Token Counts and Throughput, and Response Completeness Matters.
 The user specifically requested the original presentation's first-test results.
-The current local-llm-spark-cluster.ipynb contains a newer five-question run,
+The current notebooks/local-llm-spark-cluster.ipynb contains a newer five-question run,
 so this slide deliberately retains the dated original snapshot.
 The local vLLM notebook does not retain finish reasons. Three visible answers
 end mid-response at the 150-token limit. Ollama has two length finish reasons.
@@ -198,8 +200,9 @@ Qwen3-Omni 30B A3B\newline\modelid{Qwen/Qwen3-Omni-30B-A3B-Instruct}
 \end{tabularx}
 \par\medskip
 Gemma has the lowest WER. Qwen finishes the transcription loop sooner.
-\source{Sources: saved outputs of local-llm-whisper.ipynb, local-llm-gemma.ipynb and
-local-llm-qwen-omni.ipynb. Time covers the transcription loop, excluding model loading and
+\source{Sources: saved outputs of notebooks/local-llm-whisper.ipynb,
+notebooks/local-vlm-gemma.ipynb and notebooks/local-llm-qwen-omni.ipynb.
+Time covers the transcription loop, excluding model loading and
 initial audio decoding. Whisper's notebook does not time the request.}
 \note{All scores verified against current saved outputs on 21 October 2026.
 Whisper cell index 7: 162/1350 = 12.00 percent.

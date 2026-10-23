@@ -60,3 +60,7 @@ dev = [
 
 [tool.uv]
 default-groups = ["default"]
+
+[tool.pyrefly]
+project-includes = ["**/*.py", "notebooks/*.ipynb"]
+search-path = ["."]

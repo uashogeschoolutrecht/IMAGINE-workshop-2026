@@ -27,7 +27,7 @@ Show results found in the original presentation of the first test: the five ques
 
 - Slide 6
 
-Show test results of the transcription task, using the three different models: openai/whisper-large-v3 (local vLLM), google/gemma-4-E4B-it (mlx-vlm) and Qwen/Qwen3-Omni-30B-A3B-Instruct (on 1x DGX Spark). Results are found in the relevant notebooks: local-llm-whisper.ipynb, local-llm-gemma.ipynb and local-llm-qwen-omni.ipynb
+Show test results of the transcription task, using the three different models: openai/whisper-large-v3 (local vLLM), google/gemma-4-E4B-it (mlx-vlm) and Qwen/Qwen3-Omni-30B-A3B-Instruct (on 1x DGX Spark). Results are found in the relevant notebooks: notebooks/local-llm-whisper.ipynb, notebooks/local-vlm-gemma.ipynb and notebooks/local-llm-qwen-omni.ipynb
 
 - Slide 7
 

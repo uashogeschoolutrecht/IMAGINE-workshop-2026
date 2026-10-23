@@ -1,4 +1,8 @@
 {
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}"
+  ],
+  "jupyter.notebookFileRoot": "${workspaceFolder}",
   "ruff.importStrategy": "useBundled",
   "ruff.organizeImports": true,
   "[python]": {

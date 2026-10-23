@@ -1,6 +1,6 @@
 # Local LLM workshop
 
-A hands-on starting point for running and testing local LLMs with Ollama and vLLM, alongside a Spark-hosted endpoint. The three notebooks retain the existing smoke benchmarks; the Beamer presentation compares their saved outputs.
+A hands-on starting point for running and testing local LLMs with Ollama and vLLM, alongside a Spark-hosted endpoint. The workshop notebooks retain the existing smoke benchmarks and transcription evaluations; the Beamer presentation compares their saved outputs.
 
 ## Python environment
 
@@ -18,6 +18,17 @@ uv sync --group mlx-vlm --group mlx-audio
 `start-mlx-vlm.sh` and `start-mlx-audio.sh` select their corresponding group
 automatically. The vLLM Metal launcher is separate because the upstream
 vLLM Metal installer manages `~/.venv-vllm-metal` itself.
+
+## Notebooks
+
+All workshop notebooks live in `notebooks/`. Select the repository's shared
+`.venv/bin/python` kernel and run cells in order. Notebook setup cells locate
+the repository root automatically, so project imports and data paths work when
+the kernel starts in either the repository root or `notebooks/`.
+
+Pyrefly and VS Code/Pylance are configured to use the repository root as an
+import search path. This keeps imports from root-level project modules such as
+`livecodebench.py` resolvable from notebooks and regular Python files.
 
 ## LiveCodeBench-Pro coding evaluation
 
