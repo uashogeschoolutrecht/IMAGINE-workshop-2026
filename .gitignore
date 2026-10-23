@@ -26,9 +26,10 @@ benchmark-results/
 data/
 validation/
 
-# Presentation sources, notes, and rendered output only
+# Presentation sources, image assets, notes, and rendered output only
 presentation/**
 !presentation/**/
 !presentation/**/*.tex
 !presentation/**/*.pdf
 !presentation/**/*.md
+!presentation/images/*.svg

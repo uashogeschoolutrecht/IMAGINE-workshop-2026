@@ -80,3 +80,5 @@ The deck has 12 logical slides and 13 PDF pages. Both quiz overlays display slid
 - Slide 12
 
 Finally there's a handover to the next presenter, who will introduce an Agentic orchestrator for use in clinical imaging practice.
+
+Place the download QR code from `images/github-link.svg` prominently beside the handover, with the invitation "Try it after the presentation". Use a large, crisp code with a clear white margin so the audience can scan it. Generate both the SVG and the matching vector PDF, `images/github-link.pdf`, with `uv run scripts/generate-workshop-qr.py`. Both encode `https://github.com/uashogeschoolutrecht/IMAGINE-workshop-2026` directly and include a four-module white margin. Keep this slide visible long enough to scan; hands-on exploration follows the presentation.

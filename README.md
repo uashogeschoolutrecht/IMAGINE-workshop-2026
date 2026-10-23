@@ -459,6 +459,15 @@ Reading the supplied PDF requires no LaTeX installation. To rebuild, install a T
 
 The script keeps intermediates in a temporary directory and writes only `presentation/pdfs/local-ai-workshop.pdf`. The VS Code LaTeX Workshop recommendation uses this same script. The result fragments are inputs/evidence, not standalone TeX documents to build.
 
+The closing slide's QR code links directly to `https://github.com/uashogeschoolutrecht/IMAGINE-workshop-2026`. To regenerate both `presentation/images/github-link.svg` and the matching vector PDF used by LaTeX, run:
+
+```sh
+uv run scripts/generate-workshop-qr.py
+./scripts/build-tex.sh presentation/local-ai-workshop.tex
+```
+
+The Python script declares its own dependencies, which `uv` installs in an isolated environment. Both assets use the same QR matrix with a four-module white margin.
+
 ### Common problems
 
 | Symptom | What to check |
