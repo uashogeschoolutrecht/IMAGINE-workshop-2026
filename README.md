@@ -394,6 +394,7 @@ Every notebook uses **DIY-AI workshop (Python 3.12)** from `.venv`. Run its setu
 | [Ollama text](notebooks/local-llm-ollama.ipynb) | `start-ollama.sh` → `gemma4:26b` | `localhost:11434` | Match `OLLAMA_MODEL` if you loaded a smaller model |
 | [vLLM text](notebooks/local-llm-vllm.ipynb) | `start-mlx-vllm.sh` or `start-cuda-vllm.sh` → platform's Gemma model | `localhost:8000` | Keep the server terminal open |
 | [Gemma transcription](notebooks/local-vlm-gemma.ipynb) | Mac: loaded by notebook; Linux: `start-cuda-vllm.sh` → `google/gemma-4-E4B-it` | Mac: `mlx`; Linux: `vllm` at `localhost:8000` | Audio + references, ffmpeg; `mlx-vlm` group only on Mac |
+| [Gemma summary](notebooks/local-llm-gemma-summary.ipynb) | `start-mlx-vllm.sh` → `mlx-community/gemma-4-e4b-it-4bit` | `localhost:8000` | Saved transcription included; edit `NUM_SENTENCES` (default 5) for an English summary |
 | [Whisper transcription](notebooks/local-llm-whisper.ipynb) | Either vLLM launcher with `openai/whisper-large-v3` | `localhost:8000` | Audio + references; stop Gemma on this port first |
 | [Spark text](notebooks/local-llm-spark-cluster.ipynb) | Presenter-hosted `deepseek-ai/DeepSeek-V4-Flash` | `spark-0240:9000` | Presenter-provided VPN, server address and optional API key |
 | [Qwen transcription](notebooks/local-llm-qwen-omni.ipynb) | Presenter-hosted `Qwen/Qwen3-Omni-30B-A3B-Instruct` | `spark-0240:8000` | VPN, audio + references, ffmpeg |
@@ -405,6 +406,7 @@ Spark means **NVIDIA DGX Spark**, not Apache Spark or PySpark. You do not need a
 | Ollama | `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, `OLLAMA_API_KEY` |
 | vLLM text | `VLLM_BASE_URL`, `VLLM_MODEL`, `VLLM_API_KEY` |
 | Gemma | `GEMMA_BACKEND` (`mlx` or `vllm`), `GEMMA_MODEL`; for vLLM: `VLLM_BASE_URL`, `VLLM_API_KEY` |
+| Gemma summary | `VLLM_BASE_URL`, `VLLM_MODEL`, `VLLM_API_KEY`; edit `NUM_SENTENCES` in the setup cell |
 | Whisper | `VLLM_BASE_URL`, `WHISPER_MODEL`, `VLLM_API_KEY` |
 | Spark text | `SPARK_BASE_URL`, `SPARK_MODEL`, `SPARK_API_KEY` |
 | Qwen audio | `QWEN_BASE_URL`, `QWEN_MODEL`, `QWEN_API_KEY` |

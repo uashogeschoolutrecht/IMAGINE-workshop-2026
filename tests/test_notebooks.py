@@ -15,6 +15,7 @@ import requests
 
 ROOT = Path(__file__).resolve().parents[1]
 GEMMA = json.loads((ROOT / "notebooks/local-vlm-gemma.ipynb").read_text())
+SUMMARY = json.loads((ROOT / "notebooks/local-llm-gemma-summary.ipynb").read_text())
 
 
 def run_cell(namespace, index):
@@ -248,6 +249,168 @@ def test_vllm_text_run_needs_only_configured_server(directory, monkeypatch):
         for call in post.call_args_list
     )
     assert len(namespace["df_results"]) == 5
+
+
+def run_summary_cell(namespace, cell_id):
+    cell = next(cell for cell in SUMMARY["cells"] if cell["id"] == cell_id)
+    exec(  # noqa: S102 - execute our checked-in notebook
+        compile("".join(cell["source"]), cell_id, "exec"), namespace
+    )
+
+
+@pytest.fixture
+def summary(monkeypatch):
+    for key in ("VLLM_BASE_URL", "VLLM_MODEL", "VLLM_API_KEY"):
+        monkeypatch.delenv(key, raising=False)
+    namespace = {}
+    for cell_id in ("summary-config", "summary-transcription", "summary-request"):
+        run_summary_cell(namespace, cell_id)
+    monkeypatch.setattr(
+        requests,
+        "get",
+        Mock(return_value=response({"data": [{"id": namespace["MODEL_NAME"]}]})),
+    )
+    monkeypatch.setattr(
+        requests,
+        "post",
+        Mock(
+            return_value=response(
+                {
+                    "choices": [
+                        {
+                            "finish_reason": "stop",
+                            "message": {"content": "  A concise English summary.  "},
+                        }
+                    ]
+                }
+            )
+        ),
+    )
+    return namespace
+
+
+@pytest.mark.parametrize("num_sentences", [1, 3, 5])
+def test_summary_request_and_prompt_only_count(summary, num_sentences):
+    assert summary["NUM_SENTENCES"] == 5
+    summary["NUM_SENTENCES"] = num_sentences
+    run_summary_cell(summary, "summary-result")
+    assert summary["summary_text"] == "A concise English summary."
+    requests.get.assert_called_once_with(
+        "http://localhost:8000/v1/models",
+        headers={"Content-Type": "application/json"},
+        timeout=10,
+    )
+    # Even when the response has fewer sentences, there is no retry.
+    requests.post.assert_called_once()
+    args, kwargs = requests.post.call_args
+    assert args == ("http://localhost:8000/v1/chat/completions",)
+    assert kwargs["timeout"] == (10, 600)
+    assert kwargs["headers"] == {"Content-Type": "application/json"}
+    payload = kwargs["json"]
+    assert payload["model"] == "mlx-community/gemma-4-e4b-it-4bit"
+    assert payload["temperature"] == 0
+    assert payload["max_tokens"] == 1024
+    assert payload["stream"] is False
+    assert payload["chat_template_kwargs"] == {"enable_thinking": False}
+    assert len(payload["messages"]) == 1
+    message = payload["messages"][0]
+    assert message["role"] == "user"
+    prompt = message["content"]
+    assert f"exactly {num_sentences} sentences" in prompt
+    assert "in English" in prompt
+    assert "one paragraph" in prompt
+    assert f"<transcription>\n{summary['TRANSCRIPTION']}\n</transcription>" in prompt
+
+
+@pytest.mark.parametrize("directory", [ROOT, ROOT / "notebooks"])
+def test_summary_run_with_server_overrides(summary, monkeypatch, directory, capsys):
+    monkeypatch.chdir(directory)
+    monkeypatch.setenv("VLLM_BASE_URL", "http://local-test:8001/v1/")
+    monkeypatch.setenv("VLLM_MODEL", "test-model")
+    monkeypatch.setenv("VLLM_API_KEY", "test-key")
+    requests.get.return_value.json.return_value = {"data": [{"id": "test-model"}]}
+    for cell in SUMMARY["cells"]:
+        if cell["cell_type"] == "code":
+            run_summary_cell(summary, cell["id"])
+    assert capsys.readouterr().out.strip() == "A concise English summary."
+    requests.get.assert_called_once_with(
+        "http://local-test:8001/v1/models",
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": "Bearer test-key",
+        },
+        timeout=10,
+    )
+    assert requests.post.call_args.args == (
+        "http://local-test:8001/v1/chat/completions",
+    )
+    assert requests.post.call_args.kwargs["json"]["model"] == "test-model"
+    assert (
+        requests.post.call_args.kwargs["headers"]["Authorization"] == "Bearer test-key"
+    )
+
+
+@pytest.mark.parametrize("num_sentences", [0, -1, 1.5, "5", True, None])
+def test_summary_rejects_invalid_count_before_http(summary, num_sentences):
+    with pytest.raises(ValueError, match="positive integer"):
+        summary["summarize"]("A transcription.", num_sentences)
+    requests.get.assert_not_called()
+    requests.post.assert_not_called()
+
+
+@pytest.mark.parametrize("transcription", ["", " \n\t", None])
+def test_summary_rejects_empty_input_before_http(summary, transcription):
+    with pytest.raises(ValueError, match="nonempty string"):
+        summary["summarize"](transcription, 5)
+    requests.get.assert_not_called()
+    requests.post.assert_not_called()
+
+
+def test_summary_rejects_missing_model(summary):
+    requests.get.return_value.json.return_value = {"data": [{"id": "another-model"}]}
+    with pytest.raises(RuntimeError, match="not served"):
+        summary["summarize"]("A transcription.", 5)
+    requests.post.assert_not_called()
+
+
+@pytest.mark.parametrize("method", ["get", "post"])
+def test_summary_http_errors_clear_previous_result(summary, method):
+    getattr(
+        requests, method
+    ).return_value.raise_for_status.side_effect = requests.HTTPError("503")
+    summary["summary_text"] = "Previous summary."
+    with pytest.raises(requests.HTTPError):
+        run_summary_cell(summary, "summary-result")
+    assert summary["summary_text"] is None
+    if method == "get":
+        requests.post.assert_not_called()
+
+
+@pytest.mark.parametrize("completion", [None, {}, {"choices": []}])
+def test_summary_rejects_missing_choices(summary, completion):
+    requests.post.return_value.json.return_value = completion
+    with pytest.raises(RuntimeError, match="no completion choices"):
+        summary["summarize"]("A transcription.", 5)
+
+
+@pytest.mark.parametrize("finish_reason", ["length", "content_filter", None])
+def test_summary_rejects_incomplete_completion(summary, finish_reason):
+    requests.post.return_value.json.return_value = {
+        "choices": [
+            {"finish_reason": finish_reason, "message": {"content": "Partial summary"}}
+        ]
+    }
+    with pytest.raises(RuntimeError, match="Summary incomplete"):
+        summary["summarize"]("A transcription.", 5)
+
+
+@pytest.mark.parametrize("message", [None, {}, {"content": " "}, {"content": []}])
+def test_summary_rejects_missing_text(summary, message):
+    requests.post.return_value.json.return_value = {
+        "choices": [{"finish_reason": "stop", "message": message}]
+    }
+    with pytest.raises(RuntimeError, match="no summary text"):
+        summary["summarize"]("A transcription.", 5)
 
 
 @pytest.mark.parametrize(

@@ -1,6 +1,6 @@
 % !TEX program = pdflatex
-% Twelve logical slides following presentation/outline.md, including the title slide.
-% The embedding quiz has two overlays, producing thirteen PDF pages.
+% Fifteen logical slides following presentation/outline.md, including the title slide.
+% The embedding quiz has two overlays, producing sixteen PDF pages.
 % Build from the repository root: ./scripts/build-tex.sh presentation/local-ai-workshop.tex
 % latexmk resolves the total slide count. The earlier full deck is retained on the main branch.
 \documentclass[aspectratio=169,12pt]{beamer}
@@ -28,7 +28,7 @@
 \date{26 October 2026}
 \hypersetup{pdftitle={DIY-AI: Running Large Language and Agentic Models in your own environments},
   pdfauthor={Dr. Coert van Gemeren},
-  pdfsubject={Twelve-slide workshop with an embedding-space quiz based on outline.md}}
+  pdfsubject={Local deployment trade-offs, model architecture and an embedding-space quiz}}
 
 \begin{document}
 
@@ -111,7 +111,7 @@ from warm inference. These launch commands assume setup is complete.}
 % SLIDE 4 -------------------------------------------------------------
 \begin{frame}{Three tests of useful model behavior}
 \small
-\lead{1. Five questions: responsiveness and completeness}\par
+\lead{1. Five questions: observed deployment performance}\par
 Capital of France, an AI poem, quantum computing, the laws of robotics
 and the plot of \emph{Inception}.\par
 \textbf{Measures:} request latency, completion tokens per second and cut-off answers.
@@ -130,7 +130,7 @@ Ten contest problems, with one C++ solution attempt per problem.\par
 \textbf{Only DeepSeek on Spark produced judgeable code among our self-hosted setups.}
 GPT-6 Astra provides a separate cloud comparison.
 \source{Sources: original presentation, transcription notebooks and saved LiveCodeBench-Pro results.
-The five-question test is a smoke test, without a systematic correctness score.}
+The five-question smoke test describes deployments, without a controlled speed or correctness comparison.}
 \note{Five-question prompts and metrics reuse the historical full deck,
 available as presentation/presentation.tex on the main branch.
 Audio: notebooks/local-llm-whisper.ipynb, notebooks/local-vlm-gemma.ipynb,
@@ -143,32 +143,78 @@ benchmark-results/gpt-6-astra-2026-10-21/. Its generation conditions differ.}
 \end{frame}
 
 % SLIDE 5 -------------------------------------------------------------
-\begin{frame}{Five questions: speed and completion}
+\begin{frame}{Model size is not the same as inference cost}
+\small
+\lead{Dense small model $\to$ sparse MoE $\to$ very large sparse MoE}
+\par\medskip
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.35\textwidth}Y Y@{}}
+\toprule
+\textbf{Model} & \textbf{Total parameters} & \textbf{Active/effective}\newline\textbf{per token} \\
+\midrule
+Gemma 4 E4B (dense) & $\sim$8B incl.\ embeddings & $\sim$4.5B effective \\
+\addlinespace[0.5em]
+Gemma 4 26B A4B (MoE) & $\sim$25.2B & $\sim$3.8--4B active \\
+\addlinespace[0.5em]
+DeepSeek V4 Flash (MoE) & $\sim$284B & $\sim$13B active \\
+\bottomrule
+\end{tabularx}
+\par\medskip
+\textbf{Total} describes stored model capacity. \textbf{Active/effective}
+better indicates per-token computation, but does not determine tokens/s alone.
+\par\medskip
+\textbf{Gemma 26B can be faster than E4B:} mixture of experts (MoE) selects
+only $\sim$4B parameters per token. The full 26B is not evaluated each time.
+\par\medskip
+\textbf{DeepSeek:} $\sim$284B parameters of model capacity, $\sim$13B active per token.
+\source{E4B is dense, not MoE. Its large embedding tables use lookups, explaining the effective count.
+Parameter counts are approximate, not FLOP or speed measurements.
+Sources: \href{https://ai.google.dev/gemma/docs/core/model_card_4}{Google Gemma 4 model card};
+\href{https://api-docs.deepseek.com/news/news260424/}{DeepSeek V4 release}.}
+\note{Architecture sources checked 26 October 2026:
+\url{https://ai.google.dev/gemma/docs/core/model_card_4};
+\url{https://api-docs.deepseek.com/news/news260424/}.
+Google lists E4B under dense models: 4.5B effective parameters, 8B with
+embeddings. Per-Layer Embeddings use lookups; effective does not mean MoE
+expert routing. The text-model counts do not include the additional multimodal encoders.
+Gemma 4 26B A4B has 25.2B total and 3.8B active parameters, often rounded to 4B.
+DeepSeek V4 Flash's release specifies 284B total and 13B active.
+The progression is E4B, 26B A4B, then DeepSeek V4 Flash.
+Sparse activation explains why more total parameters need not mean more
+computation per token. It makes higher throughput for Gemma 26B than E4B
+plausible, but these observations do not isolate architecture as the cause.
+Memory bandwidth, attention, context length, kernels, quantization and distributed
+communication also affect cost. Active counts neither specify exact FLOPs nor
+guarantee dense-model-equivalent quality or speed. Total weights still impose
+storage and deployment memory requirements, even when a token uses a subset.}
+\end{frame}
+
+% SLIDE 6 -------------------------------------------------------------
+\begin{frame}{Observed inference performance: three local deployments}
 \small
 \centering
+{\footnotesize
+\setlength{\tabcolsep}{9pt}
 \begin{tabular}{@{}lrrr@{}}
 \toprule
-\textbf{Request latency} & \textbf{Local vLLM} & \textbf{Ollama} & \textbf{Spark} \\
- & Gemma E4B & Gemma 26B & DeepSeek V4 Flash \\
+\textbf{Request latency} & \textbf{vLLM Metal} & \textbf{Ollama} & \textbf{Distributed vLLM} \\
+ & Gemma 4 E4B & Gemma 4 26B A4B & DeepSeek V4 Flash \\
 \midrule
-Capital of France & 1.745\,s & 1.478\,s & \textbf{0.607\,s} \\
-AI poem & 5.491\,s & 19.619\,s & \textbf{3.686\,s} \\
+Capital of France & 1.745\,s & 1.478\,s & 0.607\,s \\
+AI poem & 5.491\,s & 19.619\,s & 3.686\,s \\
 Quantum computing & 7.818\,s & 22.523\,s & 23.756\,s \\
 Laws of robotics & 7.463\,s & 14.958\,s & 8.349\,s \\
 \emph{Inception} & 7.794\,s & 24.565\,s & 15.920\,s \\
 \midrule
 Mean latency & 6.062\,s & 16.628\,s & 10.464\,s \\
-Completion rate (tokens/s) & 18.64 & 34.37 & 28.94 \\
-Incomplete answers & 3 of 5 & 2 of 5 & 0 of 5 \\
+Completion rate (tokens/s) & \textbf{18.64} & \textbf{34.37} & \textbf{28.94} \\
 \bottomrule
-\end{tabular}
-\par\medskip
+\end{tabular}}
+\par\smallskip
 \raggedright
-Local vLLM's three faster answers were cut short.\par
-Spark finished all five responses with \texttt{stop}.
-\source{Reused from the original deck's 7 October 2026 snapshot.
-Token budgets: 150 / 800 / 800. Different models, tokenizers and reasoning limit comparisons.
-Completion rate = total completion tokens / total request time.}
+\lead{Real-world local deployment trade-offs, not a controlled model-speed benchmark.}
+\source{Original 7 October 2026 snapshot. Completion rate = total reported completion tokens / total request time
+(including prompt processing and request overhead). Hardware, serving stacks, formats/quantization,
+tokenizers and reasoning behavior differ.}
 \note{Source: historical presentation/presentation.tex on the main branch, frames Per-Request End-to-End Latency,
 Latency Summary, Token Counts and Throughput, and Response Completeness Matters.
 The user specifically requested the original presentation's first-test results.
@@ -177,10 +223,54 @@ so this slide deliberately retains the dated original snapshot.
 The historical local vLLM notebook on the main branch did not retain finish
 reasons. Three visible answers end mid-response at the 150-token limit.
 The current notebook collects new measurements independently of Spark. Ollama has two length finish reasons.
-Spark has five stop finish reasons. Completion does not establish correctness.}
+Spark has five stop finish reasons. Completion does not establish correctness.
+These are historical observations of three deployments, not an intrinsic model-speed ranking.
+Do not replace 34.37 with the current Ollama notebook's 163.027698 tokens/s.
+Its API completion-token accounting includes reasoning-generation tokens, with a
+1280-token budget and different run conditions. The original saved results do
+not separate reasoning tokens, so the token counts cannot be harmonized reliably.}
 \end{frame}
 
-% SLIDE 6 -------------------------------------------------------------
+% SLIDE 7 -------------------------------------------------------------
+\begin{frame}{Why these measurements are not apples-to-apples}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.34\textwidth}Y@{}}
+\toprule
+\textbf{Model} & \textbf{Workshop deployment} \\
+\midrule
+Gemma 4 E4B & 4-bit MLX model, vLLM Metal on M1 Pro \\
+\addlinespace[0.35em]
+Gemma 4 26B A4B & Ollama on M1 Pro \\
+\addlinespace[0.35em]
+DeepSeek V4 Flash & Distributed vLLM across 2$\times$ DGX Spark \\
+\bottomrule
+\end{tabularx}
+\par\medskip
+\begin{itemize}
+\setlength{\itemsep}{0.35em}
+\item \textbf{Serving stacks, hardware, formats and quantization differ.}
+\item \textbf{Tokenizers and reasoning differ,} so token counts are not equivalent.
+\end{itemize}
+\note{Gemma E4B uses mlx-community/gemma-4-e4b-it-4bit via vLLM Metal
+on the M1 Pro. Gemma 4 26B A4B uses gemma4:26b via Ollama on the same
+hardware class. DeepSeek V4 Flash uses vLLM across the two DGX Spark nodes.
+The historical snapshot does not pin enough runtime versions and exact
+Ollama/DeepSeek quantization metadata to reproduce a controlled comparison.
+Do not infer identical precision from a model name or fill in an unrecorded quantization.
+Historical API output limits were 150, 800 and 800 respectively. E4B's finish
+reasons were not saved, but its quantum, robotics and Inception answers visibly
+end at 150 completion tokens. Ollama has two length finishes; DeepSeek has none.
+The current Ollama notebook records 163.027698 completion tokens/s and uses
+MAX\_TOKENS = 1280. Its numerator is API usage.completion\_tokens, including
+reasoning-generation tokens, not a separately measured count of visible-answer tokens.
+The historical snapshot also lacks separate reasoning-token counts, so neither
+the old nor new figures support a normalized visible-output speed ranking.
+To isolate effects, match hardware, runtimes where possible, precision, prompts,
+output limits, reasoning settings and token accounting, and repeat measurements.
+The workshop instead illustrates practical local deployment trade-offs.}
+\end{frame}
+
+% SLIDE 8 -------------------------------------------------------------
 \begin{frame}{Dutch transcription: three models on one recording}
 \small
 Jeroen Hendrikse, UMC Utrecht: \emph{radiologieverslag}\par
@@ -228,7 +318,7 @@ All use temperature 0. These are measured pipelines with different hardware and
 preprocessing paths, not an isolated test of model size or backend speed.}
 \end{frame}
 
-% SLIDE 7 -------------------------------------------------------------
+% SLIDE 9 -------------------------------------------------------------
 \begin{frame}{Word error rate: Gemma's small advantage}
 \small
 \[
@@ -266,46 +356,106 @@ The scoring routine implements word-level minimum edit distance after NFKC
 normalization and case folding. Reference editorial choices can affect WER.}
 \end{frame}
 
-% SLIDE 8 -------------------------------------------------------------
+% SLIDE 10 ------------------------------------------------------------
+\begin{frame}{Gemma 4: evaluation of a five-sentence summary}
+\small
+Gemma 4 summarized the Dutch transcription in \textbf{five English sentences},
+then evaluated the summary against the full input.
+\par\medskip
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.42\textwidth}
+\lead{Gemma's ratings (1--5)}\par\smallskip
+\begin{tabularx}{\linewidth}{@{}Yr@{}}
+\toprule
+\textbf{Criterion} & \textbf{Score} \\
+\midrule
+Factual faithfulness & 5/5 \\
+\addlinespace[0.35em]
+Main-point coverage & 5/5 \\
+\addlinespace[0.35em]
+Preserving uncertainty & 4/5 \\
+\addlinespace[0.35em]
+English clarity & 5/5 \\
+\bottomrule
+\end{tabularx}
+\end{column}
+\begin{column}{0.53\textwidth}
+\lead{Checks against the input}\par\smallskip
+\begin{itemize}
+\setlength{\itemsep}{0.45em}
+\item \textbf{Evaluator error:} reported 4 sentences; the summary actually has \textbf{5}.
+\item \textbf{Missing detail:} the ischemic finding was \emph{new since the previous MRI}.
+\item \textbf{Precision:} ``residual tumor'' is clearer; the four-point check is compressed imprecisely.
+\end{itemize}
+\end{column}
+\end{columns}
+\par\medskip
+\lead{Broadly faithful summary; the evaluator also needs checking.}
+\source{26 October 2026. Summary and evaluation: \modelid{mlx-community/gemma-4-e4b-it-4bit}, local vLLM.
+Scores are subjective self-evaluation, not an independent benchmark.
+Source: saved summary notebook and local evaluation report.}
+\note{Sources: notebooks/local-llm-gemma-summary.ipynb (saved summary-result output);
+validation/gemma-summary-evaluation-2026-10-26/evaluation.json and evaluation.md.
+The entire 7677-character input exactly matches the saved print(transcription)
+output in notebooks/local-vlm-gemma.ipynb, ignoring the printing newline.
+The evaluator used the same model as the summarizer, temperature 0,
+thinking disabled, and a 4096-token output budget. The summary was not regenerated.
+Gemma rated faithfulness, coverage and English clarity 5/5, uncertainty 4/5,
+and reported no invented facts or contradictions. These are subjective ratings.
+The checks on the right come from the subsequent assistant verification against
+the source, not an independent human or clinical review.
+Gemma incorrectly claimed four sentences while enumerating all five in its own
+fact check. The summary already meets the requested English paragraph and sentence count.
+The source states that the incidental ischemic finding is new relative to the prior MRI.
+The four-point check covers the previous examination/report, current referral,
+scan edges and all imaging sequences, rather than only previous reports.
+Residual tumor is more natural English than rest tumor; the source also leaves
+uncertainty between residual tumor and treatment-related changes.
+The last summary sentence repeats the stable-cavity finding and could use that space
+for more precise coverage. The original summary was retained unchanged.}
+\end{frame}
+
+% SLIDE 11 ------------------------------------------------------------
 \begin{frame}{LiveCodeBench-Pro: a harder programming test}
 \small
-Contest problems from \textbf{Codeforces, ICPC and IOI} require an algorithm
-and working code that passes the judge's tests.
+\textbf{Codeforces, ICPC and IOI} problems require algorithms and code that pass the judge's tests.
 \par\medskip
 
 \begin{columns}[T,onlytextwidth]
 \begin{column}{0.51\textwidth}
 \lead{What happened locally}\par\smallskip
-Local MLX trials did not yield usable solutions in the workshop.\par
-The saved comparison records:
+Local MLX trials yielded no usable solutions.\par
+The saved judged comparison records:
 \begin{itemize}
 \setlength{\itemsep}{0.4em}
-\item \textbf{Ollama, Gemma 26B:} all 10 responses hit the 4,096-token limit
+\item \textbf{Ollama, Gemma 4 26B A4B:} all 10 responses hit the 4,096-token limit
 without final code.
 \item \textbf{Local vLLM: Not run.}
 \end{itemize}
 \end{column}
 \begin{column}{0.44\textwidth}
-\lead{The larger model}\par\smallskip
+\lead{The larger sparse MoE model}\par\smallskip
 \textbf{DeepSeek V4 Flash}\par
 \modelid{deepseek-ai/DeepSeek-V4-Flash}
-\par\medskip
+\par\smallskip
+$\sim$284B total, $\sim$13B active per token
+\par\smallskip
 vLLM over VPN on \textbf{2 DGX Sparks}\par
 \textbf{256 GB} total unified memory\par
 (128 GB per node)
-\par\medskip
+\par\smallskip
 One C++ attempt per problem.\par
 Temperature 0, 4,096 tokens.
 \end{column}
 \end{columns}
 \par\medskip
-The trials expose task difficulty and a token-budget limit, without
-establishing a general limit for local models.
+Task difficulty and output budgets limit these trials. They do not establish a general model limit.
 \source{Local MLX observation and cluster configuration: workshop outline.
 Saved evidence: Ollama, 8 October; Spark, 20 October 2026.
 \href{https://arxiv.org/abs/2506.11928}{LiveCodeBench-Pro paper};
 \href{https://www.nvidia.com/en-us/products/workstations/dgx-spark/}{DGX Spark specifications}.}
-\note{The user reports unsuccessful local MLX trials in outline.md slide 8.
+\note{The user reports unsuccessful local MLX trials in outline.md slide 11.
 The retained benchmark artifacts do not contain a completed local MLX/vLLM run.
 Do not convert Not run to a measured zero or attribute Ollama's No Code outcomes to MLX.
 benchmark-results/ollama.json has 10 No Code verdicts and 10 length finish reasons.
@@ -318,7 +468,7 @@ Sources checked 21 October 2026: \url{https://arxiv.org/abs/2506.11928};
 256 GB is the aggregate across two 128 GB nodes, not a single shared address space.}
 \end{frame}
 
-% SLIDE 9 -------------------------------------------------------------
+% SLIDE 12 ------------------------------------------------------------
 \begin{frame}{LiveCodeBench-Pro: Spark and GPT-6 Astra}
 \small
 Same ten problems and ARM64 judge. Both runs completed judging for all ten.
@@ -367,7 +517,7 @@ evaluation of the same subset. Model IDs: gpt-6-astra and
 deepseek-ai/DeepSeek-V4-Flash.}
 \end{frame}
 
-% SLIDE 10 -------------------------------------------------------------
+% SLIDE 13 ------------------------------------------------------------
 \begin{frame}{Local document search with RAG on DGX Spark}
 \small
 Retrieval-augmented generation (RAG) supplies relevant document passages
@@ -415,7 +565,7 @@ Model references: \href{https://huggingface.co/google/embeddinggemma-300m}{Embed
 \href{https://huggingface.co/BAAI/bge-reranker-v2.5-gemma2-lightweight}{BGE reranker},
 \href{https://huggingface.co/google/gemma-4-31B-it}{Gemma 4 31B};
 \href{https://milvus.io/docs/quickstart.md}{Milvus documentation}.}
-\note{Architecture follows outline.md slide 10. The query also needs an embedding
+\note{Architecture follows outline.md slide 13. The query also needs an embedding
 in the same vector space as document chunks. Retain document text and source
 metadata with vectors. The reranker scores query/passage pairs, then the generator
 receives the original question and selected passages. Diagram arrow Top-K carries
@@ -433,7 +583,7 @@ Sources checked 21 October 2026:
 \url{https://milvus.io/docs/quickstart.md}.}
 \end{frame}
 
-% SLIDE 11 -------------------------------------------------------------
+% SLIDE 14 ------------------------------------------------------------
 \begin{frame}{Embeddings: meaning as coordinates}
 \small
 \begin{columns}[T,onlytextwidth]
@@ -509,7 +659,7 @@ in a shared space so similarity search can retrieve relevant passages.
 \source{Embedding intuition and word analogy:
 \href{https://www.3blue1brown.com/lessons/gpt/}{3Blue1Brown, Transformers, the tech behind LLMs}.
 Text retrieval: \href{https://huggingface.co/google/embeddinggemma-300m}{EmbeddingGemma model card}.}
-\note{Slide 11 follows the RAG architecture with an embedding-space explanation.
+\note{Slide 13 follows the RAG architecture with an embedding-space explanation.
 First explain an embedding as a list of numbers, interpreted as coordinates in
 a high-dimensional space. Similar meanings tend to be nearby; some learned
 directions express relationships. 3Blue1Brown illustrates this using
@@ -527,13 +677,13 @@ EmbeddingGemma embeds whole questions and document chunks for retrieval, rather
 than merely looking up individual token vectors. Query and document encoding
 use the model's respective task prompts and produce vectors in a shared space.
 Retrieval ranks passages by vector similarity; it does not require snack-style
-vector arithmetic. Both overlay pages retain logical slide number 11 of 12.
+vector arithmetic. Both overlay pages retain logical slide number 14 of 15.
 References checked 23 October 2026:
 \url{https://www.3blue1brown.com/lessons/gpt/};
 \url{https://huggingface.co/google/embeddinggemma-300m}.}
 \end{frame}
 
-% SLIDE 12 -------------------------------------------------------------
+% SLIDE 15 ------------------------------------------------------------
 \begin{frame}{Next: agentic orchestration in clinical imaging}
 \begin{columns}[c,onlytextwidth]
 \begin{column}{0.53\textwidth}
@@ -559,7 +709,7 @@ around the steps of a clinical imaging workflow.
 \textbf{Scan to download the workshop}\par
 \end{column}
 \end{columns}
-\note{Handover requested in presentation/outline.md slide 12.
+\note{Handover requested in presentation/outline.md slide 15.
 No presenter name, product name or deployment claims were supplied.
 Invite the audience to download the workshop using the supplied QR code
 and try the examples after the presentation. Keep the closing slide visible
